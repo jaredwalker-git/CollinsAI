@@ -1,12 +1,10 @@
-import pyrsgis
-
-
 import os
 from pyrsgis import raster
-from pyrsgis.convert import rastertocsv
 import pandas as pd
 
-chdir = os.chdir(r"/content/gdrive/My Drive/Datasets/DSTL")
+print("Enter Directory:")
+userinput = input()
+chdir = os.chdir(userinput)
 trainDSTL = '6010_1_2.tif'
 
 # Read the rasters as array
