@@ -11,7 +11,9 @@ Program is used to help us get started on matching the labels with the images.
 Purpose: Load multiple materials for each sub image.  
 '''
 
-# Which image folder to open / change as needed
+##### = change as needed
+
+##### Which image folder to open
 select_imageFolderName = "6010_1_2" 
 
 image_path = "train_geojson_v3" + '/' + select_imageFolderName + '/'
@@ -72,13 +74,14 @@ while loop_NumMaterials != 0:
 '''
 Decide on how to display Figure | (1 Materials per Figure) vs. (All Materials per Figure)
 '''
-    # (Only 1 Materials per Figure) will display onto user PC's screen
-    #plt.title(file_name)
-    #plt.show()
-
-# (All Materials per Figure) will display onto user PC's screen
-# uncomment to see larger materials set, may cause lag to PC.
-plt.title('All materials included for sub image')
+    ##### (Only 1 Material per Figure) will display onto user PC's screen
+    # uncomment and change if needed
+        #plt.title(filename)
+        #plt.show()
+    
+###### (All Materials per Figure) will display onto user PC's screen
+# uncomment to see larger materials set, may cause lag to PC due to large datapoints.
+plt.title('All materials included for sub image' + '(' + select_imageFolderName + ')')
 plt.show()
 
     # use magnifying glass tool once image loads to zoom into polygons
