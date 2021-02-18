@@ -3,6 +3,10 @@ Material Band Model
 
 
 # Jared ->
+2/18/21
+-Concerns with DSTL - 
+Datatype for model.fit() with json files
+
 
 2/12/21
 -Begining attempting to run the RIT18 data to the model, created a copy of the model to do so for the time being. Ideally the model will be able to accept multiple datasets but i currently need to understand more of the consderations involved before being able to take that step, for now i simply created a copy of the model to use for the RIT18 data.

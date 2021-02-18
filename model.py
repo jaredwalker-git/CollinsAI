@@ -11,6 +11,19 @@ trainDSTL = '6010_1_2.tif'
 ds, featuresDSTL = rastertocsv(trainDSTL, bands='all')
 labelDSTL = pd.read_csv('train_wkt_v4.csv')
 
+from pyrsgis.convert import changeDimension
+
+featuresBangalore = changeDimension(featuresBangalore)
+labelBangalore = changeDimension (labelBangalore)
+featuresHyderabad = changeDimension(featuresHyderabad)
+nBands = featuresBangalore.shape[1]
+
+#this stores the pixels that are labeled as buildings as integers to prevent NoData pixels
+labelBangalore = (labelBangalore == 1).astype(int)
+
+print("Bangalore multispectral image shape: ", featuresBangalore.shape)
+print("Bangalore binary built-up image shape: ", labelBangalore.shape)
+print("Hyderabad multispectral image shape: ", featuresHyderabad.shape)
 
 
 

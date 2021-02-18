@@ -1,60 +1,64 @@
 import os
-from pyrsgis import raster
+from osgeo import gdal
 import pandas as pd
+from scipy.io import loadmat
+from pyrsgis.convert import changeDimension
+import numpy as np
 
-print("Enter Directory:")
-userinput = input()
-chdir = os.chdir(userinput)
-trainDSTL = '6010_1_2.tif'
+#print("Enter Directory:")
+#userinput = input()
+#chdir = os.chdir(userinput)
 
-# Read the rasters as array
-
-
-
-
-
-print("Multispectral image shape: ", featuresDSTL.shape)
-print("Label array shape: ", labelDSTL.shape)
+os.chdir('C:\\Users\\Jared\\Documents\\Datasets')
+rit18data = loadmat('rit18_data.mat')
 
 
+trainData = rit18data['train_data']
+trainLabels = rit18data['train_labels']
+
+valData = rit18data['val_data']
+valLabels = rit18data['val_labels']
+
+
+print("Multispectral image shape: ", trainData.shape)
+print("Label array shape: ", trainLabels.shape)
+
+
+print("Test data shape: ", valData.shape)
+print("Test label shape: ", valLabels.shape)
 
 
 
-from sklearn.model_selection import train_test_split
 
-xTrain, xTest, yTrain, yTest = train_test_split(featuresBangalore, labelBangalore, test_size=0.4, random_state=42)
+#change to 1d array from numpy array where columns are bands and rows are pixels
+trainData = changeDimension(trainData)
+trainLabels = changeDimension(trainLabels)
 
-print(xTrain.shape)
-print(yTrain.shape)
+nBands = trainData.shape[1]
 
-print(xTest.shape)
-print(yTest.shape)
 
+
+print("New Feature image shape: ", trainData.shape)
+print("New Label image shape: ", trainLabels.shape)
 
 
 
 
 # Normalise the data
-xTrain = xTrain / 255.0
-xTest = xTest / 255.0
-featuresHyderabad = featuresHyderabad / 255.0
+#trainData = trainData / 255.0
+#xTest = xTest / 255.0
+#featuresHyderabad = featuresHyderabad / 255.0
 
 # Reshape the data
-xTrain = xTrain.reshape((xTrain.shape[0], 1, xTrain.shape[1]))
-xTest = xTest.reshape((xTest.shape[0], 1, xTest.shape[1]))
-featuresHyderabad = featuresHyderabad.reshape((featuresHyderabad.shape[0], 1, featuresHyderabad.shape[1]))
+trainData = trainData.reshape((trainData.shape[0], 1, trainData.shape[1]))
+
 
 # Print the shape of reshaped data
-print(xTrain.shape, xTest.shape, featuresHyderabad.shape)
+print(trainData.shape, trainLabels.shape)
 
 
 
-
-
-
-
-
-from tensorflow import keras
+from tf import keras
 
 # Define the parameters of the model
 model = keras.Sequential([
@@ -72,22 +76,12 @@ model.fit(xTrain, yTrain, epochs=2)
 
 
 
-
-
-
-
-
 from sklearn.metrics import confusion_matrix, precision_score, recall_score
 
 # Predict for test data 
 yTestPredicted = model.predict(xTest)
 #removes first column (inputs) of yTestPredicted
 yTestPredicted = yTestPredicted[:,1]
-
-
-
-
-
 
 
 
@@ -106,10 +100,6 @@ print("\nP-Score: %.3f, R-Score: %.3f" % (pScore, rScore))
 
 
 
-
-
-
-import numpy as np
 
 predicted = model.predict(featuresHyderabad)
 predicted = predicted[:,1]

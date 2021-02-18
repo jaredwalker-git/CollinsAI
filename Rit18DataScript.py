@@ -4,16 +4,18 @@ import numpy as np
 import pandas as pd
 
 #reading in data
-print("Enter Directory:")
-userinput = input()
-os.chdir(userinput)
+
+os.chdir('C:\\Users\\Jared\\Documents\\Datasets')
 rit18 = loadmat('rit18_data.mat')
 
 #returns dictionary index
-print(rit18.keys())
+#print(rit18.keys())
 
-print(type(rit18['train_data']) , rit18['train_data'].shape, rit18['train_labels'].shape, rit18['classes'])
+#print(type(rit18['train_data']) , rit18['train_data'].shape, rit18['train_labels'].shape, rit18['classes'])
+
+xTrain = rit18['train_data']
 
 
 
+print(xTrain[:6].shape)
 
