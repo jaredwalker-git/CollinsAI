@@ -1,4 +1,5 @@
 import os
+
 from osgeo import gdal
 import pandas as pd
 from scipy.io import loadmat
@@ -58,19 +59,19 @@ print(trainData.shape, trainLabels.shape)
 
 
 
-from tf import keras
+from tensorflow import keras
 
 # Define the parameters of the model
 model = keras.Sequential([
     keras.layers.Flatten(input_shape=(1, nBands)),
-    keras.layers.Dense(14, activation='relu'),
-    keras.layers.Dense(2, activation='softmax')])
+    keras.layers.Dense(36, activation='relu'),
+    keras.layers.Dense(19, activation='softmax')])
 
 # Define the accuracy metrics and parameters
 model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
 
 # Run the model
-model.fit(xTrain, yTrain, epochs=2)
+model.fit(trainData, trainLabels, epochs=2, lr= 0.01)
 
 
 
@@ -79,9 +80,9 @@ model.fit(xTrain, yTrain, epochs=2)
 from sklearn.metrics import confusion_matrix, precision_score, recall_score
 
 # Predict for test data 
-yTestPredicted = model.predict(xTest)
+valPredict = model.predict(valData)
 #removes first column (inputs) of yTestPredicted
-yTestPredicted = yTestPredicted[:,1]
+valPredict = valPredict[:,1]
 
 
 
