@@ -2,6 +2,22 @@
 Material Band Model
 
 
+
+To Do: 
+
+Research and adjust batch size and learning rate. 
+
+Create Code Block to run model on one material vs. background. 
+
+Research and Implement Keras Loss function into learning model. 
+
+Create Code Block to normalize Label Data Distribution. 
+
+Research Logistic Regression/Feature Importance and Determine usability in initializing linear correlation of spectral response. 
+
+
+
+
 # Jared ->
 2/18/21
 -Concerns with DSTL - 
