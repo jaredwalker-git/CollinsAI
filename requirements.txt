@@ -1,6 +1,8 @@
-import pyrisgis
-from osgeo import gdal
-import pandas
-import scipy
-import numpy
-import os
+install pyrsgis
+install osgeo
+install pandas
+install scipy
+install numpy
+install os
+install sklearn
+install tensorflow

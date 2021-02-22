@@ -35,6 +35,10 @@ print("Test label shape: ", valLabels.shape)
 trainData = changeDimension(trainData)
 trainLabels = changeDimension(trainLabels)
 
+valData = changeDimension(valData)
+valLabels = changeDimension(valLabels)
+
+
 nBands = trainData.shape[1]
 
 
@@ -50,9 +54,18 @@ print("New Label image shape: ", trainLabels.shape)
 #xTest = xTest / 255.0
 #featuresHyderabad = featuresHyderabad / 255.0
 
-# Reshape the data
+# Reshape the data to fit format of flattened input layer
 trainData = trainData.reshape((trainData.shape[0], 1, trainData.shape[1]))
+valData = valData.reshape((valData.shape[0], 1, valData.shape[1]))
 
+#temporary minimization of data until label normalization is done
+chooseData = np.random.randint(52995306, size = 500000)
+
+trainData = trainData[chooseData]
+trainLabels = trainLabels[chooseData]
+
+valData = valData[chooseData]
+valLabels = valLabels[chooseData]
 
 # Print the shape of reshaped data
 print(trainData.shape, trainLabels.shape)
@@ -71,7 +84,7 @@ model = keras.Sequential([
 model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
 
 # Run the model
-model.fit(trainData, trainLabels, epochs=2, lr= 0.01)
+model.fit(trainData, trainLabels, epochs=2, batch_size = 64)
 
 
 
@@ -81,34 +94,25 @@ from sklearn.metrics import confusion_matrix, precision_score, recall_score
 
 # Predict for test data 
 valPredict = model.predict(valData)
-#removes first column (inputs) of yTestPredicted
+#removes first column (inputs) of valPredict
 valPredict = valPredict[:,1]
 
 
 
 
 # Calculate and display the error metrics
-yTestPredicted = (yTestPredicted>0.5).astype(int)
-cMatrix = confusion_matrix(yTest, yTestPredicted)
-pScore = precision_score(yTest, yTestPredicted)
-rScore = recall_score(yTest, yTestPredicted)
+valPredict = (valPredict>0.5).astype(int)
+cMatrix = confusion_matrix(valLabels, valPredict)
+pScore = precision_score(valLabels, valPredict, average = None)
+rScore = recall_score(valLabels, valPredict)
 
-print("Confusion matrix: for 14 nodes\n", cMatrix)
+print("Confusion matrix: for nodes\n", cMatrix)
 print("\nP-Score: %.3f, R-Score: %.3f" % (pScore, rScore))
 
 
 
 
 
-
-
-predicted = model.predict(featuresHyderabad)
-predicted = predicted[:,1]
-
-#Export raster to ds3 -> datasource for hyderabad
-prediction = np.reshape(predicted, (ds3.RasterYSize, ds3.RasterXSize))
-outFile = 'Hyderabad_2011_BuiltupNN_predicted.tif'
-raster.export(prediction, ds3, filename=outFile, dtype='float')
 
 
 
