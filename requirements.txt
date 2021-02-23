@@ -3,6 +3,10 @@ install osgeo
 install pandas
 install scipy
 install numpy
-install os
+install os-win
 install sklearn
 install tensorflow
+
+
+#GDAL must be installed but not installable through pip, must download .whl file and install from file
+

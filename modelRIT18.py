@@ -104,10 +104,10 @@ valPredict = valPredict[:,1]
 valPredict = (valPredict>0.5).astype(int)
 cMatrix = confusion_matrix(valLabels, valPredict)
 pScore = precision_score(valLabels, valPredict, average = None)
-rScore = recall_score(valLabels, valPredict)
+rScore = recall_score(valLabels, valPredict, average = None)
 
 print("Confusion matrix: for nodes\n", cMatrix)
-print("\nP-Score: %.3f, R-Score: %.3f" % (pScore, rScore))
+print("\nP-Score: %f, R-Score: %f" % (pScore, rScore))
 
 
 

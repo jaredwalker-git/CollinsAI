@@ -2,27 +2,11 @@
 Material Band Model
 
 
-
-To Do: 
-
-Research and adjust batch size and learning rate.
-- lower train time and increase accuracy
-
-Create Code Block to run model on one material vs. background.
-- Our model ultimately will train distinguishing one material from background in order to determine bands used most for that material
-
-Research and Implement Keras Loss function into learning model.
--Loss function that penalizes model for use of additional data  
-
-Create Code Block to normalize Label Data Distribution.
--need data set with uniform distribution of labels
-
-Research Logistic Regression/Feature Importance and Determine usability in initializing linear correlation of spectral response.
--peter mentioned we may be able to initialize a linear relationship between the spectral response of a material and band definition, this may be worth looking into
-
-
-
 # Jared ->
+2/23/21 
+-Changed batch size and minimized training data for now to lower training time
+-Fixed
+
 2/18/21
 -Concerns with DSTL - 
 Datatype for model.fit() with json files
