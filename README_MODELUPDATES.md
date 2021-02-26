@@ -4,8 +4,8 @@ Material Band Model
 
 # Jared ->
 2/23/21 
--Changed batch size and minimized training data for now to lower training time
--Fixed
+-Changed batch size and minimized training data to 500,000 units for now to lower training time
+-This minimization of data will be directly implemented when label distribution is made uniform 
 
 2/18/21
 -Concerns with DSTL - 
