@@ -6,6 +6,7 @@ install numpy
 install os-win
 install sklearn
 install tensorflow
+install matplotlib
 
 
 #GDAL must be installed but not installable through pip, must download .whl file and install from file
