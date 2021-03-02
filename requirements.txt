@@ -1,4 +1,4 @@
-install pyrsgis
+install pyrsgis 
 install osgeo
 install pandas
 install scipy

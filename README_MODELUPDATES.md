@@ -3,6 +3,11 @@ Material Band Model
 
 
 # Jared ->
+3/2/21
+-Created seperate training and validation scripts so that validation tests can be run. idea is that user can run training script until they get the weights how they want em then save em and not have to retrain, then just run validation/ testing. Maybe we have validation script ask if one wants to validate or test using if statement? we will have to talk more on voice just wanted to let yall know
+also this way we can easily run validation tests on our model when the time comes
+i kept it seperate from the original file as to not confuse anyone too much but additional work should probably be done to these seperate files
+
 2/23/21 
 -Changed batch size and minimized training data to 500,000 units for now to lower training time
 -This minimization of data will be directly implemented when label distribution is made uniform 
