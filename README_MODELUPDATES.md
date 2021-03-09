@@ -5,6 +5,7 @@ Material Band Model
 # Jared ->
 3/9/21 
 -Among a bunch of smaller items, created loop to determine good datapoints which equate to about half the dataset. Seems that breaking the dataset into spatial pieces will be best route for training
+-Also should be noted that the input data shape will now no longer be flattened per alex. Data shape change has therefor been removed
 
 3/2/21
 -Created seperate training and validation scripts so that validation tests can be run. idea is that user can run training script until they get the weights how they want em then save em and not have to retrain, then just run validation/ testing. Maybe we have validation script ask if one wants to validate or test using if statement? we will have to talk more on voice just wanted to let yall know
