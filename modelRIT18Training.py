@@ -36,6 +36,25 @@ print("Label array shape: ", trainLabels.shape)
  
 
 
+<<<<<<< HEAD
+=======
+# Change to 1d array from numpy array where columns are bands and rows are pixels
+trainData = changeDimension(trainData)
+trainLabels = changeDimension(trainLabels)
+
+nBands = trainData.shape[1]
+
+print("New Feature image shape: ", trainData.shape)
+print("New Label image shape: ", trainLabels.shape)
+
+# Reshape the data to fit format of flattened input layer
+trainData = trainData.reshape((trainData.shape[0], 1, trainData.shape[1]))
+
+#Cesar: Choose class that we wish to train our model with 
+# sudo code:
+#   printt("select one or more class label for training:", list: 'trainData' labels 
+
+>>>>>>> 6fa09c4825080ed2a9fcbf686d89ea0d1402f4fb
 # Temporary minimization of data until label normalization is done
 #chooseData = np.random.randint(52995306, size = 500000) #500k out of 52M random inputs is chosen
 
