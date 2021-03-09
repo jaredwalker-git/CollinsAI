@@ -33,25 +33,14 @@ trainLabels = rit18data['train_labels']
 #Returns data shape
 print("Multispectral image shape: ", trainData.shape)
 print("Label array shape: ", trainLabels.shape)
+ 
 
-
-# Change to 1d array from numpy array where columns are bands and rows are pixels
-trainData = changeDimension(trainData)
-trainLabels = changeDimension(trainLabels)
-
-nBands = trainData.shape[1]
-
-print("New Feature image shape: ", trainData.shape)
-print("New Label image shape: ", trainLabels.shape)
-
-# Reshape the data to fit format of flattened input layer
-trainData = trainData.reshape((trainData.shape[0], 1, trainData.shape[1]))
 
 # Temporary minimization of data until label normalization is done
-chooseData = np.random.randint(52995306, size = 500000) #500k out of 52M random inputs is chosen
+#chooseData = np.random.randint(52995306, size = 500000) #500k out of 52M random inputs is chosen
 
-trainData = trainData[chooseData]
-trainLabels = trainLabels[chooseData]
+#trainData = trainData[chooseData]
+#trainLabels = trainLabels[chooseData]
 
 # Print the shape of reshaped data
 print(trainData.shape, trainLabels.shape)
@@ -63,7 +52,7 @@ print(trainData.shape, trainLabels.shape)
 model = keras.Sequential([
     keras.layers.Flatten(input_shape=(1, nBands)),
     keras.layers.Dense(36, activation='relu'),
-    keras.layers.Dense(19, activation='softmax')])
+    keras.layers.Dense(nBands, activation='softmax')])
 
 
 # Define the accuracy metrics and parameters

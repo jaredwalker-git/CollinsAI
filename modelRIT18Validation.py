@@ -57,7 +57,7 @@ valLabels = valLabels[chooseData]
 model = keras.Sequential([
     keras.layers.Flatten(input_shape=(1, nBands)),
     keras.layers.Dense(36, activation='relu'),
-    keras.layers.Dense(19, activation='softmax')])
+    keras.layers.Dense(nBands, activation='softmax')])
 
 
 # Define the accuracy metrics and parameters
