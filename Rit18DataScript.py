@@ -13,21 +13,39 @@ import numpy as np
 import pandas as pd
 
 # reading in data
-os.chdir('C:\\Users\\Ahboy\\Desktop\\Datasets') #Change folder_path based on your PC.
+os.chdir('C:\\Users\\Jared\\Documents\\Datasets') #Change folder_path based on your PC.
 rit18 = loadmat('rit18_data.mat') #file_name
 
 # returns dictionary index for
 # comment/uncomment as needed for print commands
 print(rit18.keys())
-print(type(rit18['train_data']) , rit18['train_data'].shape, rit18['train_labels'].shape, rit18['classes'])
+#print(type(rit18['train_data']) , rit18['train_data'].shape, rit18['train_labels'].shape, rit18['classes'])
 
 #returns dictionary index
 #print(rit18.keys())
 #print(type(rit18['train_data']) , rit18['train_data'].shape, rit18['train_labels'].shape, rit18['classes'])
 
-xTrain = rit18['train_data']
+trainLabels = rit18['train_labels']
 
 
-print(chooseData)
-print(xTrain[:6].shape)
+#Creating Chunks - adds dimensionality - now (7, 3131, 403, 3, 14) - need to reference label data array - 2(Trees), 14(Grass), 18(Asphault)
+goodDataArray = []
+
+def find_good_datapoints():
+    labelRows = 0
+    goodPoints = 0
+    
+    for labelRows in range(9393): #Indexing through the array by each column of given row
+    
+        for labelColumns in range(5642):
+         
+            if trainLabels[labelRows, labelColumns] == 2 or trainLabels[labelRows, labelColumns] ==  14 or trainLabels[labelRows, labelColumns] ==  18 :
+                goodDataArray.append([labelRows, labelColumns])
+                goodPoints += 1
+               
+                
+    print(goodPoints)
+
+find_good_datapoints()
+            
 

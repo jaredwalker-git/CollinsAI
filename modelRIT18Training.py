@@ -33,6 +33,7 @@ trainLabels = rit18data['train_labels']
 #Returns data shape
 print("Multispectral image shape: ", trainData.shape)
 print("Label array shape: ", trainLabels.shape)
+ 
 
 #Cesar: Choose class that we wish to train our model with 
 for pixel in trainLabels.flat:
@@ -46,6 +47,8 @@ for pixel in trainLabels.flat:
 print("done")
 #Returns data shape
 
+<<<<<<< HEAD
+=======
 # Change to 1d array from numpy array where columns are bands and rows are pixels
 trainData = changeDimension(trainData)
 trainLabels = changeDimension(trainLabels)
@@ -62,11 +65,12 @@ trainData = trainData.reshape((trainData.shape[0], 1, trainData.shape[1]))
 # sudo code:
 #   printt("select one or more class label for training:", list: 'trainData' labels 
 
+>>>>>>> 6fa09c4825080ed2a9fcbf686d89ea0d1402f4fb
 # Temporary minimization of data until label normalization is done
-chooseData = np.random.randint(52995306, size = 500000) #500k out of 52M random inputs is chosen
+#chooseData = np.random.randint(52995306, size = 500000) #500k out of 52M random inputs is chosen
 
-trainData = trainData[chooseData]
-trainLabels = trainLabels[chooseData]
+#trainData = trainData[chooseData]
+#trainLabels = trainLabels[chooseData]
 
 # Print the shape of reshaped data
 print(trainData.shape, trainLabels.shape)
@@ -78,7 +82,7 @@ print(trainData.shape, trainLabels.shape)
 model = keras.Sequential([
     keras.layers.Flatten(input_shape=(1, nBands)),
     keras.layers.Dense(36, activation='relu'),
-    keras.layers.Dense(19, activation='softmax')])
+    keras.layers.Dense(nBands, activation='softmax')])
 
 
 # Define the accuracy metrics and parameters
