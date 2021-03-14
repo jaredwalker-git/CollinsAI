@@ -7,7 +7,8 @@ pip install pandas
 '''
 
 # import libaries
-from scipy.io import loadmat
+#from scipy.io import loadmat
+import scipy.io
 import os
 import numpy as np
 import pandas as pd
@@ -26,12 +27,32 @@ print(rit18.keys())
 #print(type(rit18['train_data']) , rit18['train_data'].shape, rit18['train_labels'].shape, rit18['classes'])
 
 trainLabels = rit18['train_labels']
+count = 0
 
+#Cesar: Choose class that we wish to train our model with 
+for pixel in trainLabels.flat:
+    if pixel == 18:
+        print(pixel)
+        break
+    elif pixel == 2:
+        break
+    elif pixel == 14:
+        break
+    else:
+        pixel = 0
+        count += count
+
+# Temporary minimization of data until label normalization is done
+print("done")
+#Returns data shape
+
+rit18['train_labels'] = trainLabels
+scipy.io.savemat(rit18_data_3Class.mat)
 
 #Creating Chunks - adds dimensionality - now (7, 3131, 403, 3, 14) - need to reference label data array - 2(Trees), 14(Grass), 18(Asphault)
 goodDataArray = []
 
-def find_good_datapoints():
+''' def find_good_datapoints():
     labelRows = 0
     goodPoints = 0
     
@@ -44,8 +65,9 @@ def find_good_datapoints():
                 goodPoints += 1
                
                 
-    print(goodPoints)
+    print(goodPoints) 
+
 
 find_good_datapoints()
-            
+'''
 

@@ -33,18 +33,7 @@ trainLabels = rit18data['train_labels']
 #Returns data shape
 print("Multispectral image shape: ", trainData.shape)
 print("Label array shape: ", trainLabels.shape)
- 
-#Cesar: Choose class that we wish to train our model with 
-for pixel in trainLabels.flat:
-   if pixel != 18:
-      pixel = 0 
-   if pixel != 2:
-      pixel = 0
-   if pixel != 14:
-      pixel = 0
-# Temporary minimization of data until label normalization is done
-print("done")
-#Returns data shape
+
 
 # Temporary minimization of data until label normalization is done
 #chooseData = np.random.randint(52995306, size = 500000) #500k out of 52M random inputs is chosen
