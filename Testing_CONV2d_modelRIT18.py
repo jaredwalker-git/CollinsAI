@@ -1,7 +1,7 @@
 #Code is running on Python 3.7.9 version
 
 
-#Version 2 - Testing
+#Version 3 - Testing
 
 
 # import libraries
@@ -48,7 +48,7 @@ from tensorflow import keras
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 from tensorflow.keras.models import Sequential
 
-from tensorflow.keras.losses import categorical_crossentropy 
+from tensorflow.keras.losses import sparse_categorical_crossentropy 
 from tensorflow.keras.optimizers import Adam
 
 #reshape it to a 4D array
@@ -82,23 +82,23 @@ print("shape2=(valLabels): ", valLabels.shape)
 
 # Create the model
 model = Sequential()
-model.add(Conv2D(32, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(160,160,7)))
+model.add(Conv2D(32, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(9393,5642,7)))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid'))
 model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid'))
 model.add(Conv2D(128, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
 model.add(Flatten())
-model.add(Dense(2, activation='sigmoid'))
+#model.add(Dense(6, activation='sigmoid'))
 
 #create summary of our model
 model.summary()
 
 # Compile the model
-model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 
 
-model.fit(trainData, trainLabels,validation_data=(valData, valLabels),batch_size=64, epochs=5, verbose=1, shuffle=True)
+model.fit(trainData, trainLabels, validation_data=(valData, valLabels), batch_size=16, epochs=5, verbose=1, shuffle=True)
 
 #model.fit(trainData, trainLabels, validation_data=(valData, valLabels), epochs=5)
 
