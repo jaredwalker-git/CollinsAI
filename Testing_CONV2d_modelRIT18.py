@@ -1,5 +1,9 @@
 #Code is running on Python 3.7.9 version
 
+
+#Version 2 - Testing
+
+
 # import libraries
 import os
 from osgeo import gdal #Refer to requirements.txt, if an error occur
@@ -44,10 +48,11 @@ from tensorflow import keras
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
 from tensorflow.keras.models import Sequential
 
-from tensorflow.keras.losses import binary_crossentropy
+from tensorflow.keras.losses import categorical_crossentropy 
 from tensorflow.keras.optimizers import Adam
 
 #reshape it to a 4D array
+#input must have the four-dimensional shape [samples, rows, columns, channels] 
 '''
 will hold the raw pixel values of the image, 
 in this case an image of width X, height Y, and with 6 color channels.
@@ -57,36 +62,45 @@ valData = valData.reshape(1,8833,6918,7)
 
 #Converts a class vector (integers) to binary class matrix
 trainLabels = tf.keras.utils.to_categorical(trainLabels)
-valLabels = tf.keras.utils.to_categorical(valLabels)
+#valLabels = tf.keras.utils.to_categorical(valLabels)
+
+trainLabels = trainLabels.reshape(1,-1)
+valLabels = valLabels.reshape(1,-1)
+
+
+print("shape2=(trainData): ", trainData.shape)
+print("shape2=(trainLabels): ", trainLabels.shape)
+
+print("shape2=(valData): ", valData.shape)
+print("shape2=(valLabels): ", valLabels.shape)
 
 
 # Scale data
-trainData = trainData / 255
-trainLabels = trainLabels / 255
-
-
-#NOTE: I keep on running memory issue because my pc is bad. 
-#The code works up to this line on my PC and then crashes.  
-#But it might not happen on your PC. Lmk the results on discord when running this script. -CP
-
+#trainData = trainData / 255
+#trainLabels = trainLabels / 255
 
 
 # Create the model
 model = Sequential()
-model.add(Conv2D(32, kernel_size=3, activation='relu', input_shape=(160,160,6)))
-model.add(MaxPooling2D(pool_size=(3, 3)))
-model.add(Conv2D(24, kernel_size=3, activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(32, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(160,160,7)))
+model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid'))
+model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid'))
+model.add(Conv2D(128, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
 model.add(Flatten())
-model.add(Dense(10, activation='softmax'))
+model.add(Dense(2, activation='sigmoid'))
 
-
+#create summary of our model
+model.summary()
 
 # Compile the model
-model.compile(optimizer=Adam(), loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
 
 
-model.fit(trainData, trainLabels, validation_data=(valData, valLabels), epochs=5)
+
+model.fit(trainData, trainLabels,validation_data=(valData, valLabels),batch_size=64, epochs=5, verbose=1, shuffle=True)
+
+#model.fit(trainData, trainLabels, validation_data=(valData, valLabels), epochs=5)
 
 
 
