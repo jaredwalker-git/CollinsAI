@@ -8,18 +8,22 @@ pip install pandas
 
 # import libaries
 #from scipy.io import loadmat
-import scipy.io
+import scipy.io.matlab as sio
 import os
 import numpy as np
 import pandas as pd
 
-# reading in data
-os.chdir('C:\\Users\\Jared\\Documents\\Datasets') #Change folder_path based on your PC.
-rit18 = loadmat('rit18_data.mat') #file_name
 
+# reading in data
+os.chdir('C:\\Users\\Jared\\Documents\\GitHub\\CollinsAI') #Change folder_path based on your PC.
+rit18 = sio.loadmat('rit18_asphalt_vegetation.mat') #file_name
+
+
+print(rit18.keys())
+'''
 # returns dictionary index for
 # comment/uncomment as needed for print commands
-print(rit18.keys())
+
 #print(type(rit18['train_data']) , rit18['train_data'].shape, rit18['train_labels'].shape, rit18['classes'])
 
 #returns dictionary index
@@ -50,7 +54,7 @@ rit18['train_labels'] = trainLabels
 scipy.io.savemat(rit18_data_3Class.mat)
 
 #Creating Chunks - adds dimensionality - now (7, 3131, 403, 3, 14) - need to reference label data array - 2(Trees), 14(Grass), 18(Asphault)
-goodDataArray = []
+goodDataArray = []'''
 
 ''' def find_good_datapoints():
     labelRows = 0
