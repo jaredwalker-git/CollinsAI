@@ -18,9 +18,8 @@ import numpy as np
 #chdir = os.chdir(userinput)
 
 # NOTE: Alter filepath + name lines below to personal specified file address
-filepath = "C:\\Users\\Jared\\Documents\\Datasets"
+filepath = "C:\\Users\\Ahboy\\Desktop\\Datasets"
 os.chdir(filepath)
-
 
 # Update status of running program
 print("Status: Program is running correctly. (ignore-Warning Signs)")
@@ -42,63 +41,69 @@ print("shape=(valData): ", valData.shape)
 print("shape=(valLabels): ", valLabels.shape)
 
 
+
 #Import the Modules
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D
+from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, UpSampling2D
 from tensorflow.keras.models import Sequential
 
 from tensorflow.keras.losses import sparse_categorical_crossentropy 
 from tensorflow.keras.optimizers import Adam
 
-#reshape it to a 4D array
-#input must have the four-dimensional shape [samples, rows, columns, channels] 
+#Reshape it to a 4D array
+#Input must have the four-dimensional shape [samples, rows, columns, channels] 
 '''
 will hold the raw pixel values of the image, 
-in this case an image of width X, height Y, and with 6 color channels.
+in this case an image of width X, height Y, and with 6 color channels + mask.
 '''
 trainData = trainData.reshape(1,9393,5642,7)
 valData = valData.reshape(1,8833,6918,7)
 
-#Converts a class vector (integers) to binary class matrix
-trainLabels = tf.keras.utils.to_categorical(trainLabels)
+# Converts a class vector (integers) to binary class matrix
+# For class-based classification, one-hot encode the categories
+#trainLabels = tf.keras.utils.to_categorical(trainLabels) 
 #valLabels = tf.keras.utils.to_categorical(valLabels)
 
+# Scale data
+#trainData = trainData / 255
+#trainLabels = trainLabels / 255
+
+#Shape resize needed
 trainLabels = trainLabels.reshape(1,-1)
 valLabels = valLabels.reshape(1,-1)
 
-
+#Returns data shape2
 print("shape2=(trainData): ", trainData.shape)
 print("shape2=(trainLabels): ", trainLabels.shape)
 
 print("shape2=(valData): ", valData.shape)
 print("shape2=(valLabels): ", valLabels.shape)
 
-
-# Scale data
-#trainData = trainData / 255
-#trainLabels = trainLabels / 255
-
-
-# Create the model
+#Create the model
 model = Sequential()
-model.add(Conv2D(32, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(9393,5642,7)))
+
+#encoder (down sampling)
+model.add(Conv2D(32, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(160,160,7)))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid'))
 model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid'))
 model.add(Conv2D(128, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
-model.add(Flatten())
-#model.add(Dense(6, activation='sigmoid'))
-
-#create summary of our model
+#decoder (up sampling)
+model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
+model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
+#model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
+model.add(Dense(7, activation='softmax'))
+#Create summary of our model
 model.summary()
-
-# Compile the model
+#Compile the model
 model.compile(optimizer=Adam(), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-
-
-
+#Train the model
 model.fit(trainData, trainLabels, validation_data=(valData, valLabels), batch_size=16, epochs=5, verbose=1, shuffle=True)
+
+
 
 #model.fit(trainData, trainLabels, validation_data=(valData, valLabels), epochs=5)
 
