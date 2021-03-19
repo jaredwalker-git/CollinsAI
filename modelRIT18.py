@@ -40,8 +40,8 @@ print("Label array shape: ", trainLabels.shape)
 print("Test data shape: ", valData.shape)
 print("Test label shape: ", valLabels.shape)
 
-trainData = np.array_split(trainData, 12, axis = 1)
-trainLabels = np.array_split(trainLabels, 12, axis = 0)
+trainData = np.array_split(trainData, 80, axis = 1)
+trainLabels = np.array_split(trainLabels, 80, axis = 0)
 
 '''
 for i in trainData
@@ -86,25 +86,42 @@ valData = valData[chooseData]
 valLabels = valLabels[chooseData]
 trainData.shape
 '''
+trainData[8] = trainData[8].reshape(1,118,5642,7)
+trainLabels[8] = trainLabels[8].reshape(1,118,5642)
+
+
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, UpSampling2D
+from tensorflow.keras.models import Sequential
+
+'''
+#Converts a class vector (integers) to binary class matrix
+trainLabels[8] = tf.keras.utils.to_categorical(trainLabels[8])
+#valLabels = tf.keras.utils.to_categorical(valLabels)
+
+labelShape = trainLabels[8].shape
+res = int(''.join(map(str, labelShape)))
+
+trainLabels[8] = trainLabels[8].reshape(1, res)
+valLabels[8] = valLabels[8].reshape(1, -1)
+'''
 
 # Print the shape of reshaped data
 print(trainData[8].shape, trainLabels[8].shape)
 
 
 
-import tensorflow as tf
-from tensorflow import keras
-
 # Define the parameters of the model
-model = tf.keras.Sequential([
-    keras.Conv2D(32, kernel_size=(3, 3),
-                 activation='relu',
-                 input_shape=(7,783,5642)),
-    keras.layers.Conv2D(64, (3, 3), activation='relu'),
-    keras.layers.MaxPooling2D(pool_size=(2, 2)),
-    keras.layers.Dropout(0.25),
-    keras.layers.Flatten()
-])
+model = Sequential()
+model.add(Conv2D(128, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(118,5642,7)))
+model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid'))
+model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
+model.add(Dense(7, activation='sigmoid'))
+
+model.summary()
 
 '''
 model = keras.models([
@@ -112,15 +129,16 @@ model = keras.models([
     keras.layers.Dense(36, activation='relu'),
     keras.layers.Dense(19, activation='softmax')])
 '''
+
 # Define the accuracy metrics and parameters
-model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
 
 
 # Update status of running program
 print("Status: Program is training model. Please wait...")
 
 # Run the model
-model.fit(trainData[8], trainLabels, epochs=5, batch_size = 64)
+model.fit(trainData[8], trainLabels[8], epochs=5, batch_size = 64)
 
 import shap 
 

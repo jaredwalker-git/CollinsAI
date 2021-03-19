@@ -3,6 +3,11 @@ Material Band Model
 
 
 # Jared ->
+
+3/18/21
+-Currently cant run model without crash
+-need to reduce data
+-need to run data with reduced
 3/9/21 
 -Among a bunch of smaller items, created loop to determine good datapoints which equate to about half the dataset. Seems that breaking the dataset into spatial pieces will be best route for training
 -Also should be noted that the input data shape will now no longer be flattened per alex. Data shape change has therefor been removed
