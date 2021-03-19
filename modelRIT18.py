@@ -16,7 +16,7 @@ nBands = 7
 #chdir = os.chdir(userinput)
 
 # NOTE: Alter filepath + name lines below to personal specified file address
-filepath = "C:\\Users\\Jared\\Documents\\Datasets"
+filepath = "G:\OneDrive - University of Massachusetts Lowell - UMass Lowell\Github School\Dataset"
 os.chdir(filepath)
 
 
@@ -25,10 +25,23 @@ print("Status: Program is running correctly. (ignore-Warning Signs)")
 
 # Loads all variables stored in the MAT-file into a simple Python data structure
 rit18data = loadmat("rit18_data.mat")
-rit18labels = loadmat("C:\\Users\\Jared\\Documents\\GitHub\\CollinsAI\\rit18_asphalt_vegetation.mat")
+rit18labels = loadmat("rit18_asphalt_vegetation")
 
 trainData = rit18data['train_data']
 trainLabels = rit18labels['pixel_labels']
+trainLabels1 = rit18labels['pixel_labels']
+trainLabels2 = rit18labels['pixel_labels']
+trainLabels3 = rit18labels['pixel_labels']
+trainLabels4 = rit18labels['pixel_labels']
+trainLabels5 = rit18labels['pixel_labels']
+trainLabels6 = rit18labels['pixel_labels']
+
+trainLabels = np.dstack((trainLabels,trainLabels1))
+trainLabels = np.dstack((trainLabels,trainLabels2))
+trainLabels = np.dstack((trainLabels,trainLabels3))
+trainLabels = np.dstack((trainLabels,trainLabels4))
+trainLabels = np.dstack((trainLabels,trainLabels5))
+trainLabels = np.dstack((trainLabels,trainLabels6))
 
 valData = rit18data['val_data']
 valLabels = rit18data['val_labels']
@@ -87,7 +100,7 @@ valLabels = valLabels[chooseData]
 trainData.shape
 '''
 trainData[8] = trainData[8].reshape(1,118,5642,7)
-trainLabels[8] = trainLabels[8].reshape(1,118,5642)
+trainLabels[8] = trainLabels[8].reshape(1,118,5642,7)
 
 
 import tensorflow as tf
