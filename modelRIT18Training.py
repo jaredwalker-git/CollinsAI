@@ -7,8 +7,17 @@ import pandas as pd #pip install pandas
 from scipy.io import loadmat #pip install scipy
 from pyrsgis.convert import changeDimension 
 import numpy as np
+
 from tensorflow import keras
 import tensorflow as tf
+from tensorflow.keras import backend as K # for custom loss
+from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, UpSampling2D
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.losses import sparse_categorical_crossentropy 
+from tensorflow.keras.optimizers import Adam
+import shap 
+
+#def band_importance(y_true, y_pred, smooth, thresh)
 
 # Directory call for user input
 #print("Enter Directory:")
@@ -23,6 +32,9 @@ os.chdir(filepath)
 # Update status of running program
 print("Status: Program is running correctly. (ignore-Warning Signs)")
 
+
+
+'''
 # Loads all variables stored in the MAT-file into a simple Python data structure
 rit18data = loadmat("rit18_data.mat")
 
@@ -44,19 +56,36 @@ print("Label array shape: ", trainLabels.shape)
 # Print the shape of reshaped data
 print(trainData.shape, trainLabels.shape)
 
+'''
+
+trainData = np.random.rand(1, 160, 160, 7)
+trainLabels = np.random.rand(1, 160, 160)
+
 
 
 
 # Define the parameters of the model
-model = keras.Sequential([
-    keras.layers.Flatten(input_shape=(1, nBands)),
-    keras.layers.Dense(36, activation='relu'),
-    keras.layers.Dense(nBands, activation='softmax')])
+#encoder (down sampling)
+model = Sequential()
+model.add(Conv2D(32, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(160,160,7)))
+model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid'))
+model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid'))
+model.add(Conv2D(128, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+#decoder (up sampling)
+model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
+model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
+#model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
+model.add(Dense(7, activation='softmax'))
+model.add(Dense(1, activation='softmax'))
+#Create summary of our model
+model.summary()
+#Compile the model
+model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
 
-
-# Define the accuracy metrics and parameters
-model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-
+#e = shap.DeepExplainer(model, trainData)
 
 # Update status of running program
 print("Status: Program is training model. Please wait...")
@@ -67,7 +96,7 @@ save_weights = "training_weights.ckpt"
 trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True)
 
 
-# Run the model
-model.fit(trainData, trainLabels, epochs=9, batch_size = 64, callbacks=[trn_callback])
+#Train the model
+model.fit(trainData, trainLabels, batch_size=16, epochs=5, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 print("Weights save as file:", save_weights)
