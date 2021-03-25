@@ -8,6 +8,7 @@ from scipy.io import loadmat #pip install scipy
 from pyrsgis.convert import changeDimension 
 import numpy as np
 
+
 from tensorflow import keras
 import tensorflow as tf
 from tensorflow.keras import backend as K # for custom loss
@@ -15,6 +16,7 @@ from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, UpSamp
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.losses import sparse_categorical_crossentropy 
 from tensorflow.keras.optimizers import Adam
+import tensorflow.keras.backend as K
 
 #def band_importance(y_true, y_pred, smooth, thresh)
 
@@ -59,12 +61,10 @@ model.summary()
 
 #Create Custome Loss Function
 #Practice Example: Mean Square Error/Quadratic Loss
-def rmse(predictions, targets):
-    differences = predictions - targets
-    differences_squared = differences ** 2
-    mean_of_differences_squared = differences_squared.mean()
-    rmse_val = np.sqrt(mean_of_differences_squared)
-    return rmse_val
+def rmse(y_true, y_pred): 
+    return  K.sqrt(K.mean(K.square(y_pred - y_true)))
+    
+    
 
 #rmse_val = rmse(y_hat, y_true)
 #print("rms error is: " + str(rmse_val))
@@ -72,7 +72,7 @@ def rmse(predictions, targets):
 
 #categorical_crossentropy
 #Compile the model
-model.compile(optimizer="adam", loss="rmse", metrics=["accuracy"])
+model.compile(optimizer="adam", loss=rmse, metrics=["accuracy"])
 
 # Update status of running program
 print("Status: Program is training model. Please wait...")
