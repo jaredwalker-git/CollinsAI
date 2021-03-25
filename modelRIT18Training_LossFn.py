@@ -17,6 +17,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.losses import sparse_categorical_crossentropy 
 from tensorflow.keras.optimizers import Adam
 import tensorflow.keras.backend as K
+import matplotlib.pyplot as plt
 
 #def band_importance(y_true, y_pred, smooth, thresh)
 
@@ -43,7 +44,8 @@ trainLabels = np.random.rand(1, 160, 160)
 # Define the parameters of the model
 #encoder (down sampling)
 model = Sequential()
-model.add(Conv2D(32, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(160,160,7)))
+layer1 = Conv2D(32, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(160,160,7))
+model.add(layer1)
 model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid'))
 model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid'))
@@ -60,17 +62,21 @@ model.add(Dense(1, activation='softmax'))
 model.summary()
 
 #Create Custome Loss Function
-#Practice Example: Mean Square Error/Quadratic Loss
+#Practice Example: root-Mean Square Error
 def rmse(y_true, y_pred): 
     return  K.sqrt(K.mean(K.square(y_pred - y_true)))
-    
-    
-
-#rmse_val = rmse(y_hat, y_true)
-#print("rms error is: " + str(rmse_val))
-
 
 #categorical_crossentropy
+
+#Plot 2D Conv Weights/Filters
+print("layer1 weight shape: ", layer1.get_weights()[0])
+x1w = layer1.get_weights()[0][:,:,0,:]
+
+for i in range(1,26):
+    plt.subplot(5,5,i)
+    plt.imshow(x1w[:,:,i],interpolation="nearest",cmap="gray")
+plt.show()
+
 #Compile the model
 model.compile(optimizer="adam", loss=rmse, metrics=["accuracy"])
 
@@ -86,4 +92,10 @@ trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_we
 #Train the model
 model.fit(trainData, trainLabels, batch_size=16, epochs=5, verbose=1, shuffle=True, callbacks=[trn_callback])
 
+#Plot 2D Conv Weights/Filters after training
+x1w = layer1.get_weights()[0][:,:,0,:]
+for i in range(1,26):
+    plt.subplot(5,5,i)
+    plt.imshow(x1w[:,:,i],interpolation="nearest",cmap="gray")
+plt.show()
 print("Weights save as file:", save_weights)
