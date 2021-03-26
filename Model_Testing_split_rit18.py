@@ -49,7 +49,7 @@ from tensorflow import keras
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, UpSampling2D
 from tensorflow.keras.models import Sequential
 
-from tensorflow.keras.losses import sparse_categorical_crossentropy 
+from tensorflow.keras.losses import categorical_crossentropy 
 from tensorflow.keras.optimizers import Adam
 
 '''
@@ -82,6 +82,45 @@ print("shape2=(trainLabels): ", trainLabels.shape)
 print("shape2=(valData): ", valData.shape)
 print("shape2=(valLabels): ", valLabels.shape)
 '''
+'''
+#Create the model
+model = Sequential()
+
+#encoder (down sampling)
+model.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_first', input_shape=(6,160,160)))
+model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_first'))
+model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_first'))
+model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
+#decoder (up sampling)
+model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
+model.add(UpSampling2D(size=(2,2), data_format = 'channels_first'))
+model.add(Conv2D(16, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
+model.add(UpSampling2D(size=(2,2), data_format = 'channels_first'))
+#model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
+model.add(Dense(160, activation='softmax'))
+model.add(Conv2D(6, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
+#model.add(Activation('softmax'))
+
+
+#Create summary of our model
+model.summary()
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ###########################################################################
 import matplotlib.pyplot as plt
@@ -108,7 +147,7 @@ def make_chips(image, chip_width, chip_height):
     return np.array(dataset_of_chips)
 
 ###  
-filepath = "C:\\Users\\Jared\\Documents\\Datasets"
+filepath = "C:\\Users\\Ahboy\\Desktop\\Datasets"
 os.chdir(filepath)
 
 file_path = 'rit18_data.mat'
@@ -186,31 +225,31 @@ test_mask_chips =   make_chips(test_mask, chip_width, chip_height)
 #INPUT_Image = test_data_chips.reshape(6,160,160)
 #print("train_data_chips REsults:", INPUT_Image.shape)
 
-print('Label Size: ', train_labels_chips.shape)
-
 
 #Create the model
 model = Sequential()
 
 #encoder (down sampling)
-model.add(Conv2D(32, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_first', input_shape=(6,160,160)))
+model.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_first', input_shape=(6,160,160)))
+model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_first'))
+model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_first'))
 model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
-model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_first'))
-model.add(Conv2D(128, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
 #decoder (up sampling)
-model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
-model.add(UpSampling2D(size=(2,2), data_format = 'channels_first'))
 model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
 model.add(UpSampling2D(size=(2,2), data_format = 'channels_first'))
-model.add(Flatten(data_format = 'channels_first'))  #Add a “flatten” layer which prepares a vector for the fully connected layers
-#model.add(Conv2D(6, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
-model.add(Dense(6, activation = 'softmax'))
+model.add(Conv2D(16, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
+model.add(UpSampling2D(size=(2,2), data_format = 'channels_first'))
+#model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
+model.add(Dense(160, activation='softmax'))
+model.add(Conv2D(6, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
+#model.add(Activation('softmax'))
+
 
 #Create summary of our model
 model.summary()
 #Compile the model
-model.compile(optimizer=Adam(), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
 
 
 #Train the model
