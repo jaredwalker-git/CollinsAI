@@ -1,0 +1,8 @@
+
+Install Nvidia:
+cuda_11.0.2_451.48_win10		(Version:11.0)
+cudnn-11.0-windows-x64-v8.0.4		(Version:8.0.4)
+
+
+Install Python's TensorFlow:
+pip install tensorflow-gpu==2.4.0
