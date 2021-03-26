@@ -6,3 +6,12 @@ cudnn-11.0-windows-x64-v8.0.4		(Version:8.0.4)
 
 Install Python's TensorFlow:
 pip install tensorflow-gpu==2.4.0
+
+
+PC System Properties:
+Add Environment Variables's Path.
+
+	Value (edit):
+	C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\bin
+	C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.0\libnvvp
+
