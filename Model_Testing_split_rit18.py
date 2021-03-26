@@ -17,32 +17,6 @@ import numpy as np
 #userinput = input()
 #chdir = os.chdir(userinput)
 
-'''
-# NOTE: Alter filepath + name lines below to personal specified file address
-filepath = "C:\\Users\\Ahboy\\Desktop\\Datasets"
-os.chdir(filepath)
-
-# Update status of running program
-print("Status: Program is running correctly. (ignore-Warning Signs)")
-
-# Loads all variables stored in the MAT-file into a simple Python data structure
-rit18data = loadmat("rit18_data.mat")
-
-trainData = rit18data['train_data']
-trainLabels = rit18data['train_labels']
-
-valData = rit18data['val_data']
-valLabels = rit18data['val_labels']
-
-#Returns data shape
-print("shape=(trainData): ", trainData.shape)
-print("shape=(trainLabels): ", trainLabels.shape)
-
-print("shape=(valData): ", valData.shape)
-print("shape=(valLabels): ", valLabels.shape)
-'''
-
-
 #Import the Modules
 import tensorflow as tf
 from tensorflow import keras
@@ -51,76 +25,8 @@ from tensorflow.keras.models import Sequential
 
 from tensorflow.keras.losses import categorical_crossentropy 
 from tensorflow.keras.optimizers import Adam
-
-'''
-#Reshape it to a 4D array
-#Input must have the four-dimensional shape [samples, rows, columns, channels] 
-'''
-#will hold the raw pixel values of the image, 
-#in this case an image of width X, height Y, and with 6 color channels + mask.
-'''
-trainData = trainData.reshape(1,9393,5642,7)
-valData = valData.reshape(1,8833,6918,7)
-
-# Converts a class vector (integers) to binary class matrix
-# For class-based classification, one-hot encode the categories
-#trainLabels = tf.keras.utils.to_categorical(trainLabels) 
-#valLabels = tf.keras.utils.to_categorical(valLabels)
-
-# Scale data
-#trainData = trainData / 255
-#trainLabels = trainLabels / 255
-
-#Shape resize needed
-trainLabels = trainLabels.reshape(1,-1)
-valLabels = valLabels.reshape(1,-1)
-
-#Returns data shape2
-print("shape2=(trainData): ", trainData.shape)
-print("shape2=(trainLabels): ", trainLabels.shape)
-
-print("shape2=(valData): ", valData.shape)
-print("shape2=(valLabels): ", valLabels.shape)
-'''
-'''
-#Create the model
-model = Sequential()
-
-#encoder (down sampling)
-model.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_first', input_shape=(6,160,160)))
-model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_first'))
-model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
-model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_first'))
-model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
-#decoder (up sampling)
-model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
-model.add(UpSampling2D(size=(2,2), data_format = 'channels_first'))
-model.add(Conv2D(16, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
-model.add(UpSampling2D(size=(2,2), data_format = 'channels_first'))
-#model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
-model.add(Dense(160, activation='softmax'))
-model.add(Conv2D(6, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
-#model.add(Activation('softmax'))
-
-
-#Create summary of our model
-model.summary()
-'''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import tensorflow.keras.backend as K
+import matplotlib.pyplot as plt
 
 ###########################################################################
 import matplotlib.pyplot as plt
@@ -147,7 +53,7 @@ def make_chips(image, chip_width, chip_height):
     return np.array(dataset_of_chips)
 
 ###  
-filepath = "C:\\Users\\Ahboy\\Desktop\\Datasets"
+filepath = "G:\OneDrive - University of Massachusetts Lowell - UMass Lowell\Github School\Dataset"
 os.chdir(filepath)
 
 file_path = 'rit18_data.mat'
@@ -225,12 +131,13 @@ test_mask_chips =   make_chips(test_mask, chip_width, chip_height)
 #INPUT_Image = test_data_chips.reshape(6,160,160)
 #print("train_data_chips REsults:", INPUT_Image.shape)
 
-
+#######################################################################
 #Create the model
 model = Sequential()
 
 #encoder (down sampling)
-model.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_first', input_shape=(6,160,160)))
+layer1 = (Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_first', input_shape=(6,160,160)))
+model.add(layer1)
 model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_first'))
 model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_first'))
@@ -245,6 +152,34 @@ model.add(Dense(160, activation='softmax'))
 model.add(Conv2D(6, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
 #model.add(Activation('softmax'))
 
+#######################################################################
+
+#Create Custome Loss Function
+def band_reduction(layer1Weights, bandScore): 
+    #index through filters, +1 score to bandScore for index of band that has highest weight 
+    return 
+
+#This command takes filter index 0 out of the 32 filters -> (3, 3, 7)
+layer1Weights = layer1.get_weights()[0]
+layer1Filter1 = layer1.get_weights()[0][:,:,:,0]
+print(layer1Filter1.shape)
+print(layer1Weights.shape)
+#lets print 3 filters for concept
+for j in range(0, 6):
+    plt.subplot(3, 6,j+1)
+    plt.imshow(layer1Weights[:,:,j,1],interpolation="nearest",cmap="gray")    
+
+for j in range(0, 6):
+    plt.subplot(3, 6,j+8)
+    plt.imshow(layer1Weights[:,:,j,2],interpolation="nearest",cmap="gray")   
+
+for j in range(0, 6):
+    plt.subplot(3, 7,j+15)
+    plt.imshow(layer1Weights[:,:,j,3],interpolation="nearest",cmap="gray")   
+
+plt.show()
+
+#######################################################################
 
 #Create summary of our model
 model.summary()
@@ -253,8 +188,23 @@ model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accur
 
 
 #Train the model
-model.fit(train_data_chips, train_labels_chips, validation_data=(val_data_chips, val_labels_chips), batch_size=16, epochs=5, verbose=1, shuffle=True)
+model.fit(train_data_chips, train_labels_chips, validation_data=(val_data_chips, val_labels_chips), batch_size=32, epochs=5, verbose=1, shuffle=True)
 
+#######################################################################
 
+#Plot 2D Conv Weights/Filters after training
+layer1Weights = layer1.get_weights()[0]
 
-#model.fit(trainData, trainLabels, validation_data=(valData, valLabels), epochs=5)
+for j in range(0, 6):
+    plt.subplot(3, 6,j+1)
+    plt.imshow(layer1Weights[:,:,j,1],interpolation="nearest",cmap="gray")    
+
+for j in range(0, 6):
+    plt.subplot(3, 6,j+8)
+    plt.imshow(layer1Weights[:,:,j,2],interpolation="nearest",cmap="gray")   
+
+for j in range(0, 6):
+    plt.subplot(3, 7,j+15)
+    plt.imshow(layer1Weights[:,:,j,3],interpolation="nearest",cmap="gray")   
+
+plt.show()

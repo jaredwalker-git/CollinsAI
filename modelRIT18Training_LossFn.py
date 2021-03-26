@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 
 
 # NOTE: Alter filepath + name lines below to personal specified file address
-filepath = "C:\\Users\\Jared\\Documents\\Datasets"
+filepath = "G:\OneDrive - University of Massachusetts Lowell - UMass Lowell\Github School\Dataset"
 os.chdir(filepath)
 
 
@@ -60,24 +60,14 @@ model.add(Dense(1, activation='softmax'))
 model.summary()
 
 #Create Custome Loss Function
-
 def band_reduction(layer1Weights, bandScore): 
     #index through filters, +1 score to bandScore for index of band that has highest weight 
-    
-
-#categorical_crossentropy
-
-#Plot 2D Conv Weights/Filters
-print("layer1 weight shape: ", layer1.get_weights()[0].shape)
-
-layer1Weights = layer1.get_weights()[0]
-
+    return 
 
 #This command takes filter index 0 out of the 32 filters -> (3, 3, 7)
+layer1Weights = layer1.get_weights()[0]
 layer1Filter1 = layer1.get_weights()[0][:,:,:,0]
 print(layer1Filter1.shape)
-
-
 
 #lets print 3 filters for concept
 for j in range(0, 7):
@@ -93,14 +83,12 @@ for j in range(0, 7):
     plt.imshow(layer1Weights[:,:,j,3],interpolation="nearest",cmap="gray")   
 
 plt.show()
- 
 
 #Compile the model
 model.compile(optimizer="adam", loss=[band_reduction, 'categorical_crossentropy'], metrics=["accuracy"])
 
 # Update status of running program
 print("Status: Program is training model. Please wait...")
-
 
 # Create a callback that saves the model's weights
 save_weights = "training_weights.ckpt"
