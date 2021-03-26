@@ -58,10 +58,6 @@ print(trainData.shape, trainLabels.shape)
 
 '''
 
-trainData = np.random.rand(1, 160, 160, 7)
-trainLabels = np.random.rand(1, 160, 160)
-
-
 
 
 # Define the parameters of the model
@@ -85,7 +81,6 @@ model.summary()
 #Compile the model
 model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
 
-#e = shap.DeepExplainer(model, trainData)
 
 # Update status of running program
 print("Status: Program is training model. Please wait...")
@@ -97,6 +92,6 @@ trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_we
 
 
 #Train the model
-model.fit(trainData, trainLabels, batch_size=16, epochs=5, verbose=1, shuffle=True, callbacks=[trn_callback])
+model.fit(trainData, trainLabels, batch_size=16, epochs=100, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 print("Weights save as file:", save_weights)

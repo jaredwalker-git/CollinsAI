@@ -19,10 +19,10 @@ from tensorflow.keras.optimizers import Adam
 import tensorflow.keras.backend as K
 import matplotlib.pyplot as plt
 
-#def band_importance(y_true, y_pred, smooth, thresh)
+
 
 # NOTE: Alter filepath + name lines below to personal specified file address
-filepath = "G:\OneDrive - University of Massachusetts Lowell - UMass Lowell\Github School\Dataset"
+filepath = "C:\\Users\\Jared\\Documents\\Datasets"
 os.chdir(filepath)
 
 
@@ -37,8 +37,6 @@ print("Status: Program is running correctly. (ignore-Warning Signs)")
 
 trainData = np.random.rand(1, 160, 160, 7)
 trainLabels = np.random.rand(1, 160, 160)
-
-
 
 
 # Define the parameters of the model
@@ -62,23 +60,43 @@ model.add(Dense(1, activation='softmax'))
 model.summary()
 
 #Create Custome Loss Function
-#Practice Example: root-Mean Square Error
-def rmse(y_true, y_pred): 
-    return  K.sqrt(K.mean(K.square(y_pred - y_true)))
+
+def band_reduction(layer1Weights, bandScore): 
+    #index through filters, +1 score to bandScore for index of band that has highest weight 
+    
 
 #categorical_crossentropy
 
 #Plot 2D Conv Weights/Filters
-print("layer1 weight shape: ", layer1.get_weights()[0])
-x1w = layer1.get_weights()[0][:,:,0,:]
+print("layer1 weight shape: ", layer1.get_weights()[0].shape)
 
-for i in range(1,26):
-    plt.subplot(5,5,i)
-    plt.imshow(x1w[:,:,i],interpolation="nearest",cmap="gray")
+layer1Weights = layer1.get_weights()[0]
+
+
+#This command takes filter index 0 out of the 32 filters -> (3, 3, 7)
+layer1Filter1 = layer1.get_weights()[0][:,:,:,0]
+print(layer1Filter1.shape)
+
+
+
+#lets print 3 filters for concept
+for j in range(0, 7):
+    plt.subplot(3, 7,j+1)
+    plt.imshow(layer1Weights[:,:,j,1],interpolation="nearest",cmap="gray")    
+
+for j in range(0, 7):
+    plt.subplot(3, 7,j+8)
+    plt.imshow(layer1Weights[:,:,j,2],interpolation="nearest",cmap="gray")   
+
+for j in range(0, 7):
+    plt.subplot(3, 7,j+15)
+    plt.imshow(layer1Weights[:,:,j,3],interpolation="nearest",cmap="gray")   
+
 plt.show()
+ 
 
 #Compile the model
-model.compile(optimizer="adam", loss=rmse, metrics=["accuracy"])
+model.compile(optimizer="adam", loss=[band_reduction, 'categorical_crossentropy'], metrics=["accuracy"])
 
 # Update status of running program
 print("Status: Program is training model. Please wait...")
@@ -87,15 +105,24 @@ print("Status: Program is training model. Please wait...")
 # Create a callback that saves the model's weights
 save_weights = "training_weights.ckpt"
 trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True)
-
+print("Weights save as file:", save_weights)
 
 #Train the model
 model.fit(trainData, trainLabels, batch_size=16, epochs=5, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 #Plot 2D Conv Weights/Filters after training
-x1w = layer1.get_weights()[0][:,:,0,:]
-for i in range(1,26):
-    plt.subplot(5,5,i)
-    plt.imshow(x1w[:,:,i],interpolation="nearest",cmap="gray")
+layer1Weights = layer1.get_weights()[0]
+
+for j in range(0, 7):
+    plt.subplot(3, 7,j+1)
+    plt.imshow(layer1Weights[:,:,j,1],interpolation="nearest",cmap="gray")    
+
+for j in range(0, 7):
+    plt.subplot(3, 7,j+8)
+    plt.imshow(layer1Weights[:,:,j,2],interpolation="nearest",cmap="gray")   
+
+for j in range(0, 7):
+    plt.subplot(3, 7,j+15)
+    plt.imshow(layer1Weights[:,:,j,3],interpolation="nearest",cmap="gray")   
+
 plt.show()
-print("Weights save as file:", save_weights)

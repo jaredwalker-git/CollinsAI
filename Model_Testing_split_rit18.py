@@ -108,7 +108,7 @@ def make_chips(image, chip_width, chip_height):
     return np.array(dataset_of_chips)
 
 ###  
-filepath = "C:\\Users\\Ahboy\\Desktop\\Datasets"
+filepath = "C:\\Users\\Jared\\Documents\\Datasets"
 os.chdir(filepath)
 
 file_path = 'rit18_data.mat'
@@ -186,6 +186,8 @@ test_mask_chips =   make_chips(test_mask, chip_width, chip_height)
 #INPUT_Image = test_data_chips.reshape(6,160,160)
 #print("train_data_chips REsults:", INPUT_Image.shape)
 
+print('Label Size: ', train_labels_chips.shape)
+
 
 #Create the model
 model = Sequential()
@@ -201,11 +203,9 @@ model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation
 model.add(UpSampling2D(size=(2,2), data_format = 'channels_first'))
 model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
 model.add(UpSampling2D(size=(2,2), data_format = 'channels_first'))
-#model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
-#model.add(Dense(6, activation='softmax'))
-model.add(Dense(activation='softmax'))
-model.add(Conv2D(6, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
-
+model.add(Flatten(data_format = 'channels_first'))  #Add a “flatten” layer which prepares a vector for the fully connected layers
+#model.add(Conv2D(6, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_first'))
+model.add(Dense(6, activation = 'softmax'))
 
 #Create summary of our model
 model.summary()

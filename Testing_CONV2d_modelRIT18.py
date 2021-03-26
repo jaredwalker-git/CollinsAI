@@ -18,7 +18,7 @@ import numpy as np
 #chdir = os.chdir(userinput)
 
 # NOTE: Alter filepath + name lines below to personal specified file address
-filepath = "C:\\Users\\Ahboy\\Desktop\\Datasets"
+filepath = "C:\\Users\\Jared\\Documents\\Datasets"
 os.chdir(filepath)
 
 # Update status of running program
