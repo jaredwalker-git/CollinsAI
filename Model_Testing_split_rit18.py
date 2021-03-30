@@ -20,7 +20,7 @@ import numpy as np
 #Import the Modules
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, UpSampling2D
+from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, UpSampling2D, Input
 from tensorflow.keras.models import Sequential
 
 from tensorflow.keras.losses import categorical_crossentropy 
@@ -150,8 +150,9 @@ test_mask_chips = make_chips(test_mask, chip_width, chip_height)
 model = Sequential()
 
 #encoder (down sampling)
-layer1 = (Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(160,160,6)))
-model.add(layer1)
+model.add(Input(shape = (160, 160, 6)))
+model.add(Dense(6, activation = 'relu'))
+model.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(160,160,6)))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_last'))
 model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_last'))
@@ -163,7 +164,7 @@ model.add(Conv2D(16, kernel_size=(3, 3), strides= 1, padding ='same', activation
 model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
 #model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
 model.add(Dense(6, activation='softmax'))
-model.add(Conv2D(6, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+#model.add(Conv2D(6, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
 #model.add(Activation('softmax'))
 
 #######################################################################
