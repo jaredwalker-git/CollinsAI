@@ -128,7 +128,7 @@ model = Sequential()
 
 #encoder (down sampling)
 model.add(Input(shape = (160, 160, 6)))
-layer1 = Dense(6, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+layer1 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
 model.add(layer1)
 model.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='tanh',  data_format='channels_last', input_shape=(160,160,6)))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_last'))
@@ -143,14 +143,13 @@ model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
 #model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
 model.add(Dense(6, activation='relu'))
 #model.add(Conv2D(6, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
-#model.add(Activation('softmax'))
 
 #######################################################################
 
 #Create Custome Loss Function
 def band_reduction(layer1Weights, bandScore): 
     #index through filters, +1 score to bandScore for index of band that has highest weight 
-    return 
+    return
 
 '''
 #This command takes filter index 0 out of the 32 filters -> (3, 3, 7)
@@ -170,13 +169,13 @@ for j in range(0, 6):
 
 for j in range(0, 6):
     plt.subplot(3, 6,j+13)
-    plt.imshow(layer1Weights[:,:,j,3],interpolation="nearest",cmap="gray")   
+    plt.imshow(layer1Weights[:,:,j,3],interpolation="nearest",cmap="gray") 
 
 plt.show()
 '''
 
 # Create a callback that saves the model's weights
-save_weights = "training_weights.ckpt"
+save_weights = "training_weights_test.ckpt"
 trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True)
 
 #######################################################################
@@ -188,7 +187,7 @@ model.compile(optimizer=Adam(lr = 0.001), loss='categorical_crossentropy', metri
 
 
 #Train the model
-model.fit(train_data_chips, train_labels_chips, batch_size=32, epochs=1000, verbose=1, shuffle=True, callbacks=[trn_callback])
+model.fit(train_data_chips, train_labels_chips, batch_size=32, epochs=1, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 #######################################################################
 '''
@@ -209,6 +208,12 @@ for j in range(0, 6):
 
 plt.show()
 '''
+
+layer1Weights = layer1.get_weights()[0]
+layer1Bias = layer1.get_weights()[1]
+print(layer1Weights.shape)
+plt.plot(layer1Weights[0], layer1Weights[1])    
+plt.show()
 
 #Train the model
 print("Weights save as file:", save_weights)
