@@ -45,12 +45,21 @@ def make_chips(image, chip_width, chip_height):
 
     for i in range(num_of_chips_y):
         for j in range(num_of_chips_x):
-            dataset_of_chips.append(train_data[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width,:])
+
+            a = j*chip_width
+            b = (j+1)*chip_width
+
+            #Keep the pixels within the mask chips train_mask[:,:]
+            if train_mask[a,b] != train_labels[a,b]:
+                dataset_of_chips.append(train_data[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width,:])
+            else:
+                continue
+
 
     return np.array(dataset_of_chips)
 
 ###  
-filepath = "C:\\Users\\Jared\\Documents\\Datasets"
+filepath = "C:\\Users\\Ahboy\\Desktop\\Datasets"
 os.chdir(filepath)
 
 file_path = 'rit18_data.mat'
@@ -70,9 +79,26 @@ train_labels = dataset['train_labels']
 print("Train Mask Shape: ", train_mask.shape)
 
 
+################################### TESTING (after delete this after)
+'''
+# 0 = Delete
+# 65535 = Keep
+a = 9300
+b = 5500
+
+if train_mask[a,b] != train_labels[a,b]:
+    #KEEP
+    print("KEEP",train_mask[a,b], train_labels[a,b] )
+else:
+    #IGNORE
+    print("IGNORE", train_mask[a,b], train_labels[a,b])
+'''
+#######################################
+
+
 plt.imshow(train_data[:,:,5])
-#plt.show()
-chip_width, chip_height = (160,160)
+plt.show()
+chip_width, chip_height = (40,40)
 
 
 # show mask with grid
@@ -84,7 +110,7 @@ grid_y = np.arange(0, train_data.shape[0], chip_width)
 ax.set_xticks(grid_x)
 ax.set_yticks(grid_y)
 ax.grid(which='both')
-#plt.show()
+plt.show()
 
 #prints number of chips 
 print("Number of chips in X:", train_data.shape[1] // chip_width)
@@ -98,42 +124,44 @@ print("Train Data Chip Shape: ", train_data_chips.shape)
 num_of_chips_x = train_data.shape[1] // chip_width
 num_of_chips_y = train_data.shape[0] // chip_height
 
+#exclude mask chips from training
+### 0 = False 
+### 1 = True
+#train_mask_chips 
+print("TESTING MASK Chip Shape: ", train_mask_chips.shape)
+print("TESTING AMOUNT INPUT Train Data Chip Shape: ", train_data_chips.shape) 
+### TESTING show image. 
+plt.imshow(train_data_chips[1,:,:,5])
+plt.show()
+#END
+
+
+
 '''
 # get test locations from around the image for viewing
 # make sure test chips aren't from the edges of the images
 loc_1 = int(num_of_chips_x*0.4 + num_of_chips_x*num_of_chips_y*0.6)
 loc_2 = int(num_of_chips_x*0.5 + num_of_chips_x*num_of_chips_y*0.2)
 loc_3 = int(num_of_chips_x*0.6 + num_of_chips_x*num_of_chips_y*0.5)
-
 show_these_chips = (loc_1, loc_2, loc_3)
-
 for index in show_these_chips:
-
-    plt.imshow(train_data_chips[index,5,:,:])
+    plt.imshow(train_data_chips[index,:,:,5])
     plt.show()
-
 '''
 
-
-#INPUT_Image = test_data_chips.reshape(2030,6,160,160)
-#print("INPUT_Image REsults:", INPUT_Image)
-
-
-#INPUT_Image = test_data_chips.reshape(6,160,160)
-#print("train_data_chips REsults:", INPUT_Image.shape)
 
 #######################################################################
 #Create the model
 model = Sequential()
 
 #encoder (down sampling)
-model.add(Input(shape = (160, 160, 6)))
-layer1 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+model.add(Input(shape = (40, 40, 6)))
+layer1 = Dense(6, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
 model.add(layer1)
-model.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='tanh',  data_format='channels_last', input_shape=(160,160,6)))
-model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_last'))
+model.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='tanh',  data_format='channels_last', input_shape=(40,40,6)))
+model.add(MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last'))
 model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='tanh', data_format='channels_last'))
-model.add(MaxPooling2D(pool_size=(2, 2), strides = (2, 2), padding = 'valid', data_format = 'channels_last'))
+model.add(MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last'))
 model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='tanh', data_format='channels_last'))
 #decoder (up sampling)
 model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='tanh', data_format='channels_last'))
@@ -143,13 +171,14 @@ model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
 #model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
 model.add(Dense(6, activation='relu'))
 #model.add(Conv2D(6, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+#model.add(Activation('softmax'))
 
 #######################################################################
 
 #Create Custome Loss Function
 def band_reduction(layer1Weights, bandScore): 
     #index through filters, +1 score to bandScore for index of band that has highest weight 
-    return
+    return 
 
 '''
 #This command takes filter index 0 out of the 32 filters -> (3, 3, 7)
@@ -157,25 +186,21 @@ layer1Weights = layer1.get_weights()[0]
 layer1Filter1 = layer1.get_weights()[0][:,:,:,0]
 print(layer1Filter1.shape)
 print(layer1Weights.shape)
-
 #lets print 3 filters for concept
 for j in range(0, 6):
     plt.subplot(3, 6,j+1)
     plt.imshow(layer1Weights[:,:,j,1],interpolation="nearest",cmap="gray")    
-
 for j in range(0, 6):
     plt.subplot(3, 6,j+7)
     plt.imshow(layer1Weights[:,:,j,2],interpolation="nearest",cmap="gray")   
-
 for j in range(0, 6):
     plt.subplot(3, 6,j+13)
-    plt.imshow(layer1Weights[:,:,j,3],interpolation="nearest",cmap="gray") 
-
+    plt.imshow(layer1Weights[:,:,j,3],interpolation="nearest",cmap="gray")   
 plt.show()
 '''
 
 # Create a callback that saves the model's weights
-save_weights = "training_weights_test.ckpt"
+save_weights = "training_weights.ckpt"
 trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True)
 
 #######################################################################
@@ -187,33 +212,24 @@ model.compile(optimizer=Adam(lr = 0.001), loss='categorical_crossentropy', metri
 
 
 #Train the model
-model.fit(train_data_chips, train_labels_chips, batch_size=32, epochs=1, verbose=1, shuffle=True, callbacks=[trn_callback])
+model.fit(train_data_chips, train_labels_chips, batch_size=32, epochs=1000, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 #######################################################################
 '''
 #Plot 2D Conv Weights/Filters after training
 layer1Weights = layer1.get_weights()[0]
-
 for j in range(0, 6):
     plt.subplot(3, 6,j+1)
     plt.imshow(layer1Weights[:,:,j,1],interpolation="nearest",cmap="gray")    
-
 for j in range(0, 6):
     plt.subplot(3, 6,j+7)
     plt.imshow(layer1Weights[:,:,j,2],interpolation="nearest",cmap="gray")   
-
 for j in range(0, 6):
     plt.subplot(3, 6,j+13)
     plt.imshow(layer1Weights[:,:,j,3],interpolation="nearest",cmap="gray")   
-
 plt.show()
 '''
 
-layer1Weights = layer1.get_weights()[0]
-layer1Bias = layer1.get_weights()[1]
-print(layer1Weights.shape)
-plt.plot(layer1Weights[0], layer1Weights[1])    
-plt.show()
-
 #Train the model
 print("Weights save as file:", save_weights)
+
