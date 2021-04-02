@@ -35,8 +35,6 @@ import matplotlib.pyplot as plt
 
 def make_chips(image, chip_width, chip_height):
 
-    # input shape (6, 9393, 5642)
-    # output shape (num chips, 6, 160, 160)
 
     dataset_of_chips = []
     #Finding number of chips by dimensional resolution divided by desired size
@@ -45,21 +43,17 @@ def make_chips(image, chip_width, chip_height):
 
     for i in range(num_of_chips_y):
         for j in range(num_of_chips_x):
-
-            a = j*chip_width
-            b = (j+1)*chip_width
-
             #Keep the pixels within the mask chips train_mask[:,:]
-            if train_mask[a,b] != train_labels[a,b]:
-                dataset_of_chips.append(train_data[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width,:])
-            else:
-                continue
+            #if train_mask[a,b] == train_labels[a,b]:
+            dataset_of_chips.append(train_data[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width,:])
+            #else:
+                #continue
 
 
     return np.array(dataset_of_chips)
 
 ###  
-filepath = "C:\\Users\\Ahboy\\Desktop\\Datasets"
+filepath = "C:\\Users\\Jared\\Documents\\Datasets"
 os.chdir(filepath)
 
 file_path = 'rit18_data.mat'
@@ -158,20 +152,20 @@ model = Sequential()
 model.add(Input(shape = (40, 40, 6)))
 layer1 = Dense(6, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
 model.add(layer1)
-model.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='tanh',  data_format='channels_last', input_shape=(40,40,6)))
+model.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(40,40,6)))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last'))
-model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='tanh', data_format='channels_last'))
+model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last'))
-model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='tanh', data_format='channels_last'))
+model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
 #decoder (up sampling)
-model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='tanh', data_format='channels_last'))
+model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
 model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
-model.add(Conv2D(16, kernel_size=(3, 3), strides= 1, padding ='same', activation='tanh', data_format='channels_last'))
+model.add(Conv2D(16, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
 model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
-#model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
-model.add(Dense(6, activation='relu'))
-#model.add(Conv2D(6, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
-#model.add(Activation('softmax'))
+model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
+model.add(Dense(16, activation='relu'))
+model.add(Dense(3, activation='softmax'))
+
 
 #######################################################################
 
