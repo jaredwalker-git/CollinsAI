@@ -9,6 +9,7 @@ import os
 from osgeo import gdal #Refer to requirements.txt, if an error occur
 import pandas as pd #pip install pandas
 from scipy.io import loadmat #pip install scipy
+from scipy import stats
 from pyrsgis.convert import changeDimension 
 import numpy as np
 
@@ -32,9 +33,7 @@ import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 #from scipy.io import loadmat
 #import numpy as np
-
-def make_chips(image, chip_width, chip_height):
-
+def make_chips_data(image, chip_width, chip_height):
 
     dataset_of_chips = []
     #Finding number of chips by dimensional resolution divided by desired size
@@ -43,16 +42,35 @@ def make_chips(image, chip_width, chip_height):
 
     for i in range(num_of_chips_y):
         for j in range(num_of_chips_x):
+            a = i*chip_height
+            b = j*chip_width
             #Keep the pixels within the mask chips train_mask[:,:]
-            #if train_mask[a,b] == train_labels[a,b]:
-            dataset_of_chips.append(train_data[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width,:])
-            #else:
-                #continue
-
-
+            if train_mask[a,b] != train_labels[a,b]:
+                dataset_of_chips.append(image[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width,:])
+            else:
+                continue
     return np.array(dataset_of_chips)
 
+#seperate function for label chips due to difference in dimensionality
+def make_chips_labels(image, chip_width, chip_height):
+
+    dataset_of_chips = []
+    #Finding number of chips by dimensional resolution divided by desired size
+    num_of_chips_x = train_data.shape[1] // chip_width
+    num_of_chips_y = train_data.shape[0] // chip_height
+
+    for i in range(num_of_chips_y):
+        for j in range(num_of_chips_x):
+            a = i*chip_height
+            b = j*chip_width
+            #Keep the pixels within the mask chips train_mask[:,:]
+            if train_mask[a,b] != train_labels[a,b]:
+                dataset_of_chips.append(image[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width])
+            else:
+                continue
+    return np.array(dataset_of_chips)
 ###  
+
 filepath = "C:\\Users\\Jared\\Documents\\Datasets"
 os.chdir(filepath)
 
@@ -70,7 +88,7 @@ print("Train Data shape: ", train_data.shape)
 train_mask = train_data[:,:,-1]
 train_data = train_data[:,:,:6]
 train_labels = dataset['train_labels']
-print("Train Mask Shape: ", train_mask.shape)
+#print("Train Mask Shape: ", train_mask.shape)
 
 
 ################################### TESTING (after delete this after)
@@ -109,39 +127,31 @@ plt.show()
 #prints number of chips 
 print("Number of chips in X:", train_data.shape[1] // chip_width)
 print("Number of chips in Y:", train_data.shape[0] // chip_height)
-train_data_chips =   make_chips(train_data, chip_width, chip_height)
-train_labels_chips = make_chips(train_labels, chip_width, chip_height)
-train_mask_chips =   make_chips(train_mask, chip_width, chip_height)
+train_data_chips =   make_chips_data(train_data, chip_width, chip_height)
+train_labels_chips = make_chips_labels(train_labels, chip_width, chip_height)
+
 
 print("Train Data Chip Shape: ", train_data_chips.shape)
+print("Label Data Chip Shape: ", train_labels_chips.shape) 
 
 num_of_chips_x = train_data.shape[1] // chip_width
 num_of_chips_y = train_data.shape[0] // chip_height
 
-#exclude mask chips from training
-### 0 = False 
-### 1 = True
-#train_mask_chips 
-print("TESTING MASK Chip Shape: ", train_mask_chips.shape)
-print("TESTING AMOUNT INPUT Train Data Chip Shape: ", train_data_chips.shape) 
-### TESTING show image. 
+#generalize mode label over entire label chip
+train_labels_chipsGen = []
+
+for i in range(24812):
+    train_labels_chipsGen.append(stats.mode(train_labels_chips[i, :, :], axis = None))
+
+train_labels_chipsGen = np.array(train_labels_chipsGen)
+train_labels_chipsGen = train_labels_chipsGen[:,1,:]
+print("Label Data Chip Shape After Chip Generalization: ", train_labels_chipsGen.shape) 
+
+
+#show chip 1 for proof of concept
 plt.imshow(train_data_chips[1,:,:,5])
 plt.show()
 #END
-
-
-
-'''
-# get test locations from around the image for viewing
-# make sure test chips aren't from the edges of the images
-loc_1 = int(num_of_chips_x*0.4 + num_of_chips_x*num_of_chips_y*0.6)
-loc_2 = int(num_of_chips_x*0.5 + num_of_chips_x*num_of_chips_y*0.2)
-loc_3 = int(num_of_chips_x*0.6 + num_of_chips_x*num_of_chips_y*0.5)
-show_these_chips = (loc_1, loc_2, loc_3)
-for index in show_these_chips:
-    plt.imshow(train_data_chips[index,:,:,5])
-    plt.show()
-'''
 
 
 #######################################################################
@@ -169,30 +179,6 @@ model.add(Dense(3, activation='softmax'))
 
 #######################################################################
 
-#Create Custome Loss Function
-def band_reduction(layer1Weights, bandScore): 
-    #index through filters, +1 score to bandScore for index of band that has highest weight 
-    return 
-
-'''
-#This command takes filter index 0 out of the 32 filters -> (3, 3, 7)
-layer1Weights = layer1.get_weights()[0]
-layer1Filter1 = layer1.get_weights()[0][:,:,:,0]
-print(layer1Filter1.shape)
-print(layer1Weights.shape)
-#lets print 3 filters for concept
-for j in range(0, 6):
-    plt.subplot(3, 6,j+1)
-    plt.imshow(layer1Weights[:,:,j,1],interpolation="nearest",cmap="gray")    
-for j in range(0, 6):
-    plt.subplot(3, 6,j+7)
-    plt.imshow(layer1Weights[:,:,j,2],interpolation="nearest",cmap="gray")   
-for j in range(0, 6):
-    plt.subplot(3, 6,j+13)
-    plt.imshow(layer1Weights[:,:,j,3],interpolation="nearest",cmap="gray")   
-plt.show()
-'''
-
 # Create a callback that saves the model's weights
 save_weights = "training_weights.ckpt"
 trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True)
@@ -206,23 +192,9 @@ model.compile(optimizer=Adam(lr = 0.001), loss='categorical_crossentropy', metri
 
 
 #Train the model
-model.fit(train_data_chips, train_labels_chips, batch_size=32, epochs=1000, verbose=1, shuffle=True, callbacks=[trn_callback])
+model.fit(train_data_chips, train_labels_chipsGen, batch_size=32, epochs=10, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 #######################################################################
-'''
-#Plot 2D Conv Weights/Filters after training
-layer1Weights = layer1.get_weights()[0]
-for j in range(0, 6):
-    plt.subplot(3, 6,j+1)
-    plt.imshow(layer1Weights[:,:,j,1],interpolation="nearest",cmap="gray")    
-for j in range(0, 6):
-    plt.subplot(3, 6,j+7)
-    plt.imshow(layer1Weights[:,:,j,2],interpolation="nearest",cmap="gray")   
-for j in range(0, 6):
-    plt.subplot(3, 6,j+13)
-    plt.imshow(layer1Weights[:,:,j,3],interpolation="nearest",cmap="gray")   
-plt.show()
-'''
 
 #Train the model
 print("Weights save as file:", save_weights)

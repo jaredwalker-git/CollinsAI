@@ -1,0 +1,148 @@
+#Code is running on Python 3.7.9 version
+
+
+#Version 3 - Testing
+
+
+# import libraries
+import os
+from osgeo import gdal #Refer to requirements.txt, if an error occur
+import pandas as pd #pip install pandas
+from scipy.io import loadmat
+from scipy import stats
+from pyrsgis.convert import changeDimension 
+import numpy as np
+import sys
+
+# Directory call for user input
+#print("Enter Directory:")
+#userinput = input()
+#chdir = os.chdir(userinput)
+import matplotlib.pyplot as plt
+
+###########################################################################
+import matplotlib.pyplot as plt
+#from scipy.io import loadmat
+#import numpy as np
+
+def make_chips_data(image, chip_width, chip_height):
+
+    dataset_of_chips = []
+    #Finding number of chips by dimensional resolution divided by desired size
+    num_of_chips_x = train_data.shape[1] // chip_width
+    num_of_chips_y = train_data.shape[0] // chip_height
+
+    for i in range(num_of_chips_y):
+        for j in range(num_of_chips_x):
+            a = i*chip_height
+            b = j*chip_width
+            #Keep the pixels within the mask chips train_mask[:,:]
+            if train_mask[a,b] != train_labels[a,b]:
+                dataset_of_chips.append(image[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width,:])
+            else:
+                continue
+    return np.array(dataset_of_chips)
+
+#seperate function for label chips due to difference in dimensionality
+def make_chips_labels(image, chip_width, chip_height):
+
+    dataset_of_chips = []
+    #Finding number of chips by dimensional resolution divided by desired size
+    num_of_chips_x = train_data.shape[1] // chip_width
+    num_of_chips_y = train_data.shape[0] // chip_height
+
+    for i in range(num_of_chips_y):
+        for j in range(num_of_chips_x):
+            a = i*chip_height
+            b = j*chip_width
+            #Keep the pixels within the mask chips train_mask[:,:]
+            if train_mask[a,b] != train_labels[a,b]:
+                dataset_of_chips.append(image[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width])
+            else:
+                continue
+    return np.array(dataset_of_chips)
+
+###  
+filepath = "C:\\Users\\Jared\\Documents\\Datasets"
+os.chdir(filepath)
+
+file_path = 'rit18_data.mat'
+
+dataset = loadmat(file_path)
+#Load Training Data and Labels
+train_data = dataset['train_data']
+
+#moves bands to channel last
+train_data = np.moveaxis(train_data, 0, -1)
+print("Train Data shape: ", train_data.shape)
+
+#splitting 7th band of orthomosiac from train data and load train labels
+train_mask = train_data[:,:,-1]
+train_data = train_data[:,:,:6]
+train_labels = dataset['train_labels']
+print("Train Mask Shape: ", train_mask.shape)
+print("Train Labels Shape: ", train_labels.shape)
+
+'''
+plt.imshow(train_data[:,:,5])
+plt.show()
+'''
+
+chip_width, chip_height = (40,40)
+
+'''
+# show mask with grid
+# chips in the yellow region must be kept
+fig, ax = plt.subplots()
+plt.imshow(train_mask[:,:])
+grid_x = np.arange(0, train_data.shape[1], chip_width)
+grid_y = np.arange(0, train_data.shape[0], chip_width)
+ax.set_xticks(grid_x/10)
+ax.set_yticks(grid_y/10)
+ax.grid(which='both')
+plt.show()
+'''
+
+#prints number of chips 
+print("Number of chips in X:", train_data.shape[1] // chip_width)
+print("Number of chips in Y:", train_data.shape[0] // chip_height)
+train_data_chips = make_chips_data(train_data, chip_width, chip_height)
+train_labels_chips = make_chips_labels(train_labels, chip_width, chip_height)
+
+
+
+np.set_printoptions(threshold=sys.maxsize)
+#print("Train Mask Chip Shape: ", train_mask_chips.shape)
+print("Train Data Chip Shape: ", train_data_chips.shape)
+print("Label Data Chip Shape: ", train_labels_chips.shape) 
+#print(train_labels_chips[20000,:,:])
+
+num_of_chips_x = train_data.shape[1] // chip_width
+num_of_chips_y = train_data.shape[0] // chip_height
+
+#generalize mode label over entire label chip
+train_labels_chipsGen = []
+
+for i in range(24812):
+    train_labels_chipsGen.append(stats.mode(train_labels_chips[i, :, :], axis = None))
+
+train_labels_chipsGen = np.array(train_labels_chipsGen)
+train_labels_chipsGen = train_labels_chipsGen[:,1,:]
+print("Label Data Chip Shape: ", train_labels_chipsGen.shape) 
+
+
+#train_mask_chips 
+#print("Chip Shape: ", train_mask_chips.shape)
+#print("Train Data Chip Shape: ", train_data_chips.shape) 
+
+### TESTING show image. 
+#plt.imshow(train_data_chips[1,:,:,5])
+#plt.show()
+#END
+
+
+
+
+
+
+
