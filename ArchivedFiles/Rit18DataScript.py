@@ -16,7 +16,7 @@ import pandas as pd
 
 # reading in data
 os.chdir('C:\\Users\\Jared\\Documents\\Datasets') #Change folder_path based on your PC.
-rit18 = sio.loadmat('rit18_data.mat') #file_name
+rit18 = sio.loadmat('rit18_asphalt_vegetation.mat') #file_name
 
 
 print(rit18.keys())

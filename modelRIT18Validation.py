@@ -112,15 +112,6 @@ model.add(Dense(3, activation='softmax'))
 
 #######################################################################
 
-#Create Custome Loss Function
-def band_reduction(layer1Weights, bandScore): 
-    #index through filters, +1 score to bandScore for index of band that has highest weight 
-    return 
-
-
-
-
-#######################################################################
 
 #Create summary of our model
 model.summary()
