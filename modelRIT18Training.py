@@ -82,7 +82,7 @@ def make_chips_labels(image, chip_width, chip_height):
         elif train_labels_chipsGen[i,:] == 2:
             train_labels_softmax.append([0, 0, 1, 0])
         elif train_labels_chipsGen[i,:] == 3:
-            train_labels_softmax.append([0, 0, 1, 0])
+            train_labels_softmax.append([0, 0, 0, 1])
         else:
             continue
 
@@ -176,11 +176,10 @@ model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the
 model.add(Dense(16, activation='relu'))
 model.add(Dense(4, activation='softmax'))
 
-
 #######################################################################
 
 # Create a callback that saves the model's weights
-save_weights = "training_weights.ckpt"
+save_weights = "training_weights_FINAL_R_01_BS_32.ckpt"
 trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True)
 
 #######################################################################
@@ -190,12 +189,10 @@ model.summary()
 #Compile the model
 model.compile(optimizer=Adam(lr = 0.001), loss='categorical_crossentropy', metrics=['accuracy'])
 
-
 #Train the model
-model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=10, verbose=1, shuffle=True, callbacks=[trn_callback])
+model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=200, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 #######################################################################
 
 #Train the model
 print("Weights save as file:", save_weights)
-

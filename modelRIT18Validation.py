@@ -32,24 +32,68 @@ import matplotlib.pyplot as plt
 #from scipy.io import loadmat
 #import numpy as np
 
-def make_chips(image, chip_width, chip_height):
-
-    # input shape (6, 9393, 5642)
-    # output shape (num chips, 6, 160, 160)
+def make_chips_data(image, chip_width, chip_height):
 
     dataset_of_chips = []
-
-    num_of_chips_x = val_data.shape[2] // chip_width
-    num_of_chips_y = val_data.shape[1] // chip_height
-
-    print("num chips left right:", val_data.shape[2] // chip_width)
-    print("num chips up down:", val_data.shape[1] // chip_height)
+    #Finding number of chips by dimensional resolution divided by desired size
+    num_of_chips_x = train_data.shape[1] // chip_width
+    num_of_chips_y = train_data.shape[0] // chip_height
 
     for i in range(num_of_chips_y):
         for j in range(num_of_chips_x):
-            dataset_of_chips.append(val_data[:,i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width])
-
+            a = i*chip_height
+            b = j*chip_width
+            #Keep the pixels within the mask chips train_mask[:,:]
+            if train_mask[a,b] != train_labels[a,b]:
+                dataset_of_chips.append(image[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width,:])
+            else:
+                continue
     return np.array(dataset_of_chips)
+
+#seperate function for label chips due to difference in dimensionality
+def make_chips_labels(image, chip_width, chip_height):
+
+    numGoodChips = 0
+    dataset_of_chips = []
+    #Finding number of chips by dimensional resolution divided by desired size
+    num_of_chips_x = train_data.shape[1] // chip_width
+    num_of_chips_y = train_data.shape[0] // chip_height
+
+    for i in range(num_of_chips_y):
+        for j in range(num_of_chips_x):
+            a = i*chip_height
+            b = j*chip_width
+            #Keep the pixels within the mask chips train_mask[:,:]
+            if train_mask[a,b] != train_labels[a,b]:
+                dataset_of_chips.append(image[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width])
+                numGoodChips = numGoodChips + 1
+            else:
+                continue
+    #turn chips into numpy array for upcoming computation          
+    dataset_of_chips = np.array(dataset_of_chips)
+    train_labels_chipsGen = []
+
+    for i in range(numGoodChips):
+        train_labels_chipsGen.append(stats.mode(dataset_of_chips[i, :, :], axis = None))
+
+    train_labels_chipsGen = np.array(train_labels_chipsGen)
+    train_labels_chipsGen = train_labels_chipsGen[:,0,:]
+    print("Label Data Chip Shape After Chip Generalization: ", train_labels_chipsGen.shape)
+    train_labels_softmax = []
+
+    for i in range(numGoodChips):
+        if train_labels_chipsGen[i,:] == 0:
+            train_labels_softmax.append([1, 0, 0, 0])
+        elif train_labels_chipsGen[i,:] == 1:
+            train_labels_softmax.append([0, 1, 0, 0])
+        elif train_labels_chipsGen[i,:] == 2:
+            train_labels_softmax.append([0, 0, 1, 0])
+        elif train_labels_chipsGen[i,:] == 3:
+            train_labels_softmax.append([0, 0, 0, 1])
+        else:
+            continue
+
+    return np.array(train_labels_softmax)
 
 ###  
 filepath = "C:\\Users\\Jared\\Documents\\Datasets"
@@ -94,7 +138,7 @@ model = Sequential()
 
 #encoder (down sampling)
 model.add(Input(shape = (40, 40, 6)))
-layer1 = Dense(6, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+layer1 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
 model.add(layer1)
 model.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(40,40,6)))
 model.add(MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last'))
@@ -108,7 +152,7 @@ model.add(Conv2D(16, kernel_size=(3, 3), strides= 1, padding ='same', activation
 model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
 model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
 model.add(Dense(16, activation='relu'))
-model.add(Dense(3, activation='softmax'))
+model.add(Dense(4, activation='softmax'))
 
 #######################################################################
 
