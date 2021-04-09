@@ -152,7 +152,7 @@ model.add(Conv2D(16, kernel_size=(3, 3), strides= 1, padding ='same', activation
 model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
 model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
 model.add(Dense(16, activation='relu'))
-model.add(Dense(4, activation='softmax'))
+model.add(Dense(3, activation='softmax'))
 
 #######################################################################
 
