@@ -16,7 +16,7 @@ import numpy as np
 #Import the Modules
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, UpSampling2D, Input
+from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, UpSampling2D, Input, Concatenate
 from tensorflow.keras.models import Sequential
 
 from tensorflow.keras.losses import categorical_crossentropy 
@@ -136,11 +136,13 @@ print("Number of chips in Y:", train_data.shape[0] // chip_height)
 train_data_chips =   make_chips_data(train_data, chip_width, chip_height)
 train_labels_softmax = make_chips_labels(train_labels, chip_width, chip_height)
 numChips = train_labels_softmax.shape[0]
-print("Label chips for test \n", train_labels_softmax[1,:])
+print("Label chips for test \n", train_labels_softmax[1000,:])
 print("Total Number of Chips Taken from Mask: ", numChips)
 
 print("Train Data Chip Shape: ", train_data_chips.shape)
 print("Label Data Chip Shape: ", train_labels_softmax.shape) 
+
+train_labels_softmax = [train_labels_softmax, train_labels_softmax]
 
 num_of_chips_x = train_data.shape[1] // chip_width
 num_of_chips_y = train_data.shape[0] // chip_height
@@ -153,26 +155,34 @@ plt.imshow(train_data_chips[1,:,:,5])
 
 
 #######################################################################
-#Create the model
-model = Sequential()
+#Create the parallel model structures
+classifier = Sequential()
+band_importance = Sequential()
+
+#parallel layers for importance through weight analysis
+importance_weights = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+band_importance.add(Input(shape = (40, 40, 6)))
+band_importance.add(importance_weights)
 
 #encoder (down sampling)
-model.add(Input(shape = (40, 40, 6)))
-layer1 = Dense(6, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
-model.add(layer1)
-model.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(40,40,6)))
-model.add(MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last'))
-model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
-model.add(MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last'))
-model.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+classifier.add(Input(shape = (40, 40, 6)))
+classifier.add(Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(40,40,6)))
+classifier.add(MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last'))
+classifier.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+classifier.add(MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last'))
+classifier.add(Conv2D(64, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
 #decoder (up sampling)
-model.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
-model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
-model.add(Conv2D(16, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
-model.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
-model.add(Flatten())  #Add a “flatten” layer which prepares a vector for the fully connected layers
-model.add(Dense(16, activation='relu'))
-model.add(Dense(3, activation='softmax'))
+classifier.add(Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+classifier.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
+classifier.add(Conv2D(16, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last'))
+classifier.add(UpSampling2D(size=(2,2), data_format = 'channels_last'))
+
+parallelLayers = ([classifier, band_importance])
+Concatenate()(parallelLayers)
+
+flattenLayer = Flatten()(parallelLayers)  #Add a “flatten” layer which prepares a vector for the fully connected layers
+fullyConnected = Dense(16, activation='relu')(flattenLayer)
+output = Dense(3, activation='softmax')(fullyConnected)
 
 #######################################################################
 
@@ -182,21 +192,23 @@ trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_we
 
 #######################################################################
 
-#Create summary of our model
-model.summary()
-#Compile the model 
-model.compile(optimizer=Adam(lr = 0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+#Create summary of our parallel layers
+classifier.summary()
+band_importance.summary()
 
-layer1Weights = layer1.get_weights()
-print(layer1Weights[0])
+#Compile the model 
+model.compile(optimizer=Adam(lr = 0.00001), loss='categorical_crossentropy', metrics=['accuracy'])
+
+BandWeights = importance_weights.get_weights()
+print(BandWeights[0])
 
 #Train the model
 model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=10, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 #######################################################################
 
-layer1Weights = layer1.get_weights()
-print(layer1Weights[0])
+BandWeights = importance_weights.get_weights()
+print(BandWeights[0])
 
 #Train the model
 print("Weights save as file:", save_weights)
