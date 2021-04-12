@@ -184,7 +184,7 @@ BandImportance3 = DenseLayer3.get_weights()
 importance_weights.append(BandImportance3)
 outputDenseLayers.append(Out3)
 #Band 4
-inputDenseLayer4 = Lambda(lambda x: x[:, 3], input_shape = (40, 40, 6))(inputs)
+inputDenseLayer4 = Lambda(lambda x: x[:, :, 3], input_shape = (40, 40, 6))(inputs)
 DenseLayer4 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
 Out4 = DenseLayer4(inputDenseLayer4)
 BandImportance4 = DenseLayer4.get_weights()
