@@ -98,7 +98,7 @@ userinput = input()
 chdir = os.chdir(userinput)
 '''
 
-filepath = "C:\\Users\\Ahboy\\Desktop\\Datasets"
+filepath = "C:\\Users\\Jared\\Documents\\Datasets"
 os.chdir(filepath)
 
 dataset = loadmat('rit18_data.mat')
@@ -171,59 +171,42 @@ importance_weights = []
 inputDenseLayer1 = Lambda(lambda x: x[:, :, :, 0:1], input_shape = (40, 40, 6))(inputsX)
 DenseLayer1 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
 Out1 = DenseLayer1(inputDenseLayer1)
-BandImportance1 = DenseLayer1.get_weights()
-importance_weights.append(BandImportance1)
 outputDenseLayers.append(Out1)
-print("input Layer 1: ", inputDenseLayer1.shape)
+
 #Band 2
 inputDenseLayer2 = Lambda(lambda x: x[:, :, :, 1:2], input_shape = (40, 40, 6))(inputsX)
 DenseLayer2 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
 Out2 = DenseLayer2(inputDenseLayer2)
-BandImportance2 = DenseLayer2.get_weights()
-importance_weights.append(BandImportance2)
 outputDenseLayers.append(Out2)
-print("input Layer 2: ", inputDenseLayer2.shape)
+
 #Band 3
 inputDenseLayer3 = Lambda(lambda x: x[:, :, :, 2:3], input_shape = (40, 40, 6))(inputsX)
 DenseLayer3 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
 Out3 = DenseLayer3(inputDenseLayer3)
-BandImportance3 = DenseLayer3.get_weights()
-importance_weights.append(BandImportance3)
 outputDenseLayers.append(Out3)
-print("input Layer 3: ", inputDenseLayer3.shape)
+
 #Band 4
 inputDenseLayer4 = Lambda(lambda x: x[:, :, :, 3:4], input_shape = (40, 40, 6))(inputsX)
 DenseLayer4 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
 Out4 = DenseLayer4(inputDenseLayer4)
-BandImportance4 = DenseLayer4.get_weights()
-importance_weights.append(BandImportance4)
 outputDenseLayers.append(Out4)
+
 #Band 5
 inputDenseLayer5 = Lambda(lambda x: x[:, :, :, 4:5], input_shape = (40, 40, 6))(inputsX)
 DenseLayer5 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
 Out5 = DenseLayer5(inputDenseLayer5)
-BandImportance5 = DenseLayer5.get_weights()
-importance_weights.append(BandImportance5)
 outputDenseLayers.append(Out5)
+
 #Band 6
 inputDenseLayer6 = Lambda(lambda x: x[:, :, :, 5:6], input_shape = (40, 40, 6))(inputsX)
 DenseLayer6 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
 Out6 = DenseLayer6(inputDenseLayer6)
-BandImportance6 = DenseLayer6.get_weights()
-importance_weights.append(BandImportance6)
 outputDenseLayers.append(Out6)
-
-##########Testing
-print("input Layer 4: ", inputDenseLayer4.shape)
-print("input Layer 5: ", inputDenseLayer5.shape)
-print("input Layer 6: ", inputDenseLayer6.shape)
-
 
 #Now to concatenate the dense layers
 classifierInput = Concatenate(axis = 2)(outputDenseLayers)
-#print(classifierInput.shape)
-#############################################################################################################
 
+#############################################################################################################
 
 #Encoder (down sampling)
 C1 = Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(40,40,6))(classifierInput)
@@ -254,16 +237,26 @@ model = tf.keras.Model(inputs = [inputsX], outputs = output)
 model.summary()
 model.compile(optimizer=Adam(lr = 0.00001), loss='categorical_crossentropy', metrics=['accuracy'])
 
-#BandWeights = importance_weights.get_weights()
-#print(BandWeights[0])
+def Band_Importance(band_weights):
+    def _custom_loss():
+        #abs value was to minimize 
+        loss = abs(tf.norm(band_weights[0])) + abs(tf.norm(band_weights[1])) + abs(tf.norm(band_weights[2])) + abs(tf.norm(band_weights[3])) + abs(tf.norm(band_weights[4])) + abs(tf.norm(band_weights[5]))
+        return loss
+    return _custom_loss
+
+band_weights = []
+band_weights.append(DenseLayer1.kernel)
+band_weights.append(DenseLayer2.kernel)
+band_weights.append(DenseLayer3.kernel)
+band_weights.append(DenseLayer4.kernel)
+band_weights.append(DenseLayer5.kernel)
+band_weights.append(DenseLayer6.kernel)
+model.add_loss(Band_Importance(band_weights))
 
 #Train the model
 model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=10, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 #######################################################################
-
-BandWeights = importance_weights.get_weights()
-print(BandWeights[0])
 
 #Train the model
 print("Weights save as file:", save_weights)

@@ -156,14 +156,12 @@ model.add(Dense(3, activation='softmax'))
 
 #######################################################################
 
-
 #Create summary of our model
 model.summary()
 #Compile the model
 model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
 
 #######################################################################
-
 
 #Load weights from training
 trn_weights = "training_weights.ckpt"
@@ -172,12 +170,10 @@ model.load_weights(trn_weights)
 # Update status of running program
 print("Status: Program is running model. Please wait...")
 
-
 # Predict for test data 
 valPredict = model.predict(val_data_chips)
 # removes first column (inputs) of valPredict
 valPredict = valPredict[:,1]
-
 
 # Calculate and display the error metrics
 valPredict = (valPredict>0.5).astype(int)
