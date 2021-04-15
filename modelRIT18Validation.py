@@ -36,8 +36,8 @@ def make_chips_data(image, chip_width, chip_height):
 
     dataset_of_chips = []
     #Finding number of chips by dimensional resolution divided by desired size
-    num_of_chips_x = train_data.shape[1] // chip_width
-    num_of_chips_y = train_data.shape[0] // chip_height
+    num_of_chips_x = val_data.shape[1] // chip_width
+    num_of_chips_y = val_data.shape[0] // chip_height
 
     for i in range(num_of_chips_y):
         for j in range(num_of_chips_x):
@@ -56,8 +56,8 @@ def make_chips_labels(image, chip_width, chip_height):
     numGoodChips = 0
     dataset_of_chips = []
     #Finding number of chips by dimensional resolution divided by desired size
-    num_of_chips_x = train_data.shape[1] // chip_width
-    num_of_chips_y = train_data.shape[0] // chip_height
+    num_of_chips_x = val_data.shape[1] // chip_width
+    num_of_chips_y = val_data.shape[0] // chip_height
 
     for i in range(num_of_chips_y):
         for j in range(num_of_chips_x):
@@ -96,7 +96,7 @@ def make_chips_labels(image, chip_width, chip_height):
     return np.array(train_labels_softmax)
 
 ###  
-filepath = "C:\\Users\\Jared\\Documents\\Datasets"
+filepath = "G:\OneDrive - University of Massachusetts Lowell - UMass Lowell\Github School\Dataset"
 os.chdir(filepath)
 file_path = 'rit18_data.mat'
 dataset = loadmat(file_path)
@@ -112,8 +112,8 @@ val_mask = val_data[-1]
 val_data = val_data[:6]
 val_labels = dataset['val_labels']
 
-val_data_chips =   make_chips(val_data, chip_width, chip_height)
-val_labels_chips = make_chips(val_labels, chip_width, chip_height)
+val_data_chips =   make_chips_data(val_data, chip_width, chip_height)
+val_labels_chips = make_chips_labels(val_labels, chip_width, chip_height)
 val_mask_chips =   make_chips(val_mask, chip_width, chip_height)
 
 #Load Test Data
@@ -164,7 +164,7 @@ model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accur
 #######################################################################
 
 #Load weights from training
-trn_weights = "training_weights.ckpt"
+trn_weights = "training_weights_FINAL.ckpt"
 model.load_weights(trn_weights)
 
 # Update status of running program
