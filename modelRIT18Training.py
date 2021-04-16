@@ -10,7 +10,6 @@ from osgeo import gdal #Refer to requirements.txt, if an error occur
 import pandas as pd #pip install pandas
 from scipy.io import loadmat #pip install scipy
 from scipy import stats
-from pyrsgis.convert import changeDimension 
 import numpy as np
 
 #Import the Modules
@@ -90,7 +89,8 @@ def make_chips_labels(image, chip_width, chip_height):
 
     return np.array(train_labels_softmax)
 
-###########################################             
+###########################################     
+        
 '''
 # Directory call for user input
 print("Enter Directory:")
@@ -117,11 +117,9 @@ train_mask = train_data[:,:,-1]
 train_data = train_data[:,:,:6]
 #print("Train Mask Shape: ", train_mask.shape)
 
-
 plt.imshow(train_data[:,:,5])
 #plt.show()
 chip_width, chip_height = (40,40)
-
 
 #Show mask with grid
 #Chips in the yellow region must be kept
@@ -146,22 +144,17 @@ print("Total Number of Chips Taken from Mask: ", numChips)
 print("Train Data Chip Shape: ", train_data_chips.shape)
 print("Label Data Chip Shape: ", train_labels_softmax.shape)
 
-
 num_of_chips_x = train_data.shape[1] // chip_width
 num_of_chips_y = train_data.shape[0] // chip_height
 
-
 #Show chip 1 for proof of concept
+np.random.random(24800)
 plt.imshow(train_data_chips[1,:,:,5])
-#plt.show()
-#END
-
+plt.show()
 
 #######################################################################
 #Input layer for all layers and lambda split 
-inputsX =  Input(shape = (40, 40, 6), batch_size = None) #need to built model
-
-#print("input layer: ", inputs.shape)
+inputsX =  Input(shape = (40, 40, 6), batch_size = None) 
 
 outputDenseLayers = []
 importance_weights = []
@@ -231,15 +224,13 @@ trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_we
 
 #######################################################################
 
-#Compile the model
-
 model = tf.keras.Model(inputs = [inputsX], outputs = output)
 model.summary()
 model.compile(optimizer=Adam(lr = 0.00001), loss='categorical_crossentropy', metrics=['accuracy'])
 
 def Band_Importance(band_weights):
     def _custom_loss():
-        #abs value was to minimize 
+        #abs value was to minimize more aggressively
         loss = abs(tf.norm(band_weights[0])) + abs(tf.norm(band_weights[1])) + abs(tf.norm(band_weights[2])) + abs(tf.norm(band_weights[3])) + abs(tf.norm(band_weights[4])) + abs(tf.norm(band_weights[5]))
         return loss
     return _custom_loss
@@ -253,10 +244,6 @@ band_weights.append(DenseLayer5.kernel)
 band_weights.append(DenseLayer6.kernel)
 model.add_loss(Band_Importance(band_weights))
 
-#Train the model
-model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=10, verbose=1, shuffle=True, callbacks=[trn_callback])
+model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=150, verbose=1, shuffle=True, callbacks=[trn_callback])
 
-#######################################################################
-
-#Train the model
 print("Weights save as file:", save_weights)

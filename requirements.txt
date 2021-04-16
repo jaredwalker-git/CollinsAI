@@ -1,13 +1,9 @@
-install pyrsgis 
-install osgeo
-install pandas
-install scipy
-install numpy
-install os-win
-install sklearn
-install tensorflow
-install matplotlib
-
-
-#GDAL must be installed but not installable through pip, must download .whl file and install from file
-
+tensorflow-gpu == 2.4.0
+os-win == 5.4.0
+##osgeo must now be installed to use gdal
+osgeo
+gdal == 3.2.1
+pandas == 1.2.2
+scipy == 1.6.1
+numpy == 1.19.5
+matplotlib == 3.3.4
