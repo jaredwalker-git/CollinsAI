@@ -16,7 +16,7 @@ import pandas as pd
 
 # reading in data
 os.chdir('C:\\Users\\Jared\Documents\\GitHub\\CollinsAI') #Change folder_path based on your PC.
-rit18 = sio.loadmat('train_labels') #file_name
+rit18 = sio.loadmat('val_labels') #file_name
 
 
 print(rit18.keys())

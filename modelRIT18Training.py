@@ -1,16 +1,17 @@
 #Code is running on Python 3.7.9 version
 
 
-#Version 3 - Testing
+#Version 4 - Training
 
 
 # import libraries
 import os
-from osgeo import gdal #Refer to requirements.txt, if an error occur
 import pandas as pd #pip install pandas
 from scipy.io import loadmat #pip install scipy
 from scipy import stats
 import numpy as np
+from pprint import pprint
+
 
 #Import the Modules
 import tensorflow as tf
@@ -22,10 +23,6 @@ from tensorflow.keras.losses import categorical_crossentropy
 from tensorflow.keras.optimizers import Adam, SGD
 import tensorflow.keras.backend as K
 import matplotlib.pyplot as plt
-
-
-#from keras import layers
-#from keras.layers import Lambda
 
 ###########################################################################
 def make_chips_data(image, chip_width, chip_height):
@@ -40,7 +37,7 @@ def make_chips_data(image, chip_width, chip_height):
             a = i*chip_height
             b = j*chip_width
             #Keep the pixels within the mask chips train_mask[:,:]
-            if train_mask[a,b] != train_labels[a,b]:
+            if train_mask[a,b] != train_data[a,b,1]:
                 dataset_of_chips.append(image[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width,:])
             else:
                 continue
@@ -60,7 +57,7 @@ def make_chips_labels(image, chip_width, chip_height):
             a = i*chip_height
             b = j*chip_width
             #Keep the pixels within the mask chips train_mask[:,:]
-            if train_mask[a,b] != train_labels[a,b]:
+            if train_mask[a,b] != train_data[a,b,1]:
                 dataset_of_chips.append(image[i*chip_height:(i+1)*chip_height, j*chip_width: (j+1)*chip_width])
                 numGoodChips = numGoodChips + 1
             else:
@@ -108,6 +105,9 @@ dataset_labels = loadmat('train_labels.mat')
 train_data = dataset['train_data']
 train_labels = dataset_labels['relabeled_training']
 
+#hyperparameters
+regularizer_coeff = 0.1
+
 #Moves bands to channel last
 train_data = np.moveaxis(train_data, 0, -1)
 print("Train Data shape: ", train_data.shape)
@@ -115,7 +115,7 @@ print("Train Data shape: ", train_data.shape)
 #Splitting 7th band of orthomosiac from train data and load train labels
 train_mask = train_data[:,:,-1]
 train_data = train_data[:,:,:6]
-#print("Train Mask Shape: ", train_mask.shape)
+
 
 plt.imshow(train_data[:,:,5])
 #plt.show()
@@ -138,7 +138,6 @@ print("Number of chips in Y:", train_data.shape[0] // chip_height)
 train_data_chips =   make_chips_data(train_data, chip_width, chip_height)
 train_labels_softmax = make_chips_labels(train_labels, chip_width, chip_height)
 numChips = train_labels_softmax.shape[0]
-print("Label chips for test \n", train_labels_softmax[1000,:])
 print("Total Number of Chips Taken from Mask: ", numChips)
 
 print("Train Data Chip Shape: ", train_data_chips.shape)
@@ -147,11 +146,12 @@ print("Label Data Chip Shape: ", train_labels_softmax.shape)
 num_of_chips_x = train_data.shape[1] // chip_width
 num_of_chips_y = train_data.shape[0] // chip_height
 
+'''
 #Show chip 1 for proof of concept
-np.random.random(24800)
-plt.imshow(train_data_chips[1,:,:,5])
-plt.show()
-
+chip = np.random.randint(0, train_data_chips.shape[0])
+plt.imshow(train_data_chips[chip,:,:,5])
+#plt.show()
+'''
 #######################################################################
 #Input layer for all layers and lambda split 
 inputsX =  Input(shape = (40, 40, 6), batch_size = None) 
@@ -162,37 +162,37 @@ importance_weights = []
 #Creating split input and dense layer so each layer creates a weight for a single band -> must enumerate this for each band so that weights can be pulled by variable name
 #Band 1
 inputDenseLayer1 = Lambda(lambda x: x[:, :, :, 0:1], input_shape = (40, 40, 6))(inputsX)
-DenseLayer1 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+DenseLayer1 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out1 = DenseLayer1(inputDenseLayer1)
 outputDenseLayers.append(Out1)
 
 #Band 2
 inputDenseLayer2 = Lambda(lambda x: x[:, :, :, 1:2], input_shape = (40, 40, 6))(inputsX)
-DenseLayer2 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+DenseLayer2 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out2 = DenseLayer2(inputDenseLayer2)
 outputDenseLayers.append(Out2)
 
 #Band 3
 inputDenseLayer3 = Lambda(lambda x: x[:, :, :, 2:3], input_shape = (40, 40, 6))(inputsX)
-DenseLayer3 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+DenseLayer3 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out3 = DenseLayer3(inputDenseLayer3)
 outputDenseLayers.append(Out3)
 
 #Band 4
 inputDenseLayer4 = Lambda(lambda x: x[:, :, :, 3:4], input_shape = (40, 40, 6))(inputsX)
-DenseLayer4 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+DenseLayer4 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out4 = DenseLayer4(inputDenseLayer4)
 outputDenseLayers.append(Out4)
 
 #Band 5
 inputDenseLayer5 = Lambda(lambda x: x[:, :, :, 4:5], input_shape = (40, 40, 6))(inputsX)
-DenseLayer5 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+DenseLayer5 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out5 = DenseLayer5(inputDenseLayer5)
 outputDenseLayers.append(Out5)
 
 #Band 6
 inputDenseLayer6 = Lambda(lambda x: x[:, :, :, 5:6], input_shape = (40, 40, 6))(inputsX)
-DenseLayer6 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+DenseLayer6 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out6 = DenseLayer6(inputDenseLayer6)
 outputDenseLayers.append(Out6)
 
@@ -219,7 +219,7 @@ output = Dense(3, activation='softmax')(fullyConnected)
 #######################################################################
 
 #Create a callback that saves the model's weights
-save_weights = "training_weights_FINAL.ckpt"
+save_weights = "train_150_00001_1.ckpt"
 trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True)
 
 #######################################################################
@@ -235,6 +235,10 @@ def Band_Importance(band_weights):
         return loss
     return _custom_loss
 
+
+model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=150, verbose=1, shuffle=True, callbacks=[trn_callback])
+
+#pulling weights to print
 band_weights = []
 band_weights.append(DenseLayer1.kernel)
 band_weights.append(DenseLayer2.kernel)
@@ -243,7 +247,6 @@ band_weights.append(DenseLayer4.kernel)
 band_weights.append(DenseLayer5.kernel)
 band_weights.append(DenseLayer6.kernel)
 model.add_loss(Band_Importance(band_weights))
-
-model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=150, verbose=1, shuffle=True, callbacks=[trn_callback])
+pprint(band_weights)
 
 print("Weights save as file:", save_weights)
