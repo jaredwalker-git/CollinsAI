@@ -14,6 +14,7 @@ from pprint import pprint
 from sklearn.metrics import confusion_matrix, precision_score, recall_score
 from beautifultable import BeautifulTable, BTRowCollection, BTColumnCollection
 import matplotlib.pyplot as plt
+from matplotlib.cm import ScalarMappable, colors
 from PIL import Image
 from sklearn.preprocessing import OneHotEncoder
 
@@ -93,7 +94,7 @@ def make_image_from_chips(chips, chip_width, chip_height):
                 a = i*chip_height
                 b = j*chip_width
                 #Keep the pixels within the mask chips train_mask[:,:]
-                if val_mask[a,b] == val_data[a,b,1]:
+                if val_mask[a,b] != val_data[a,b,1]:
                     row.append(chips[chip_index, :].argmax())
                 else:
                     row.append(0)
@@ -128,6 +129,8 @@ print("Total Number of Chips Taken from Mask: ", numChips)
 
 print("val image shape: ", val_data.shape )
 
+#hyperparameters
+regularizer_coeff = 0.1
 
 #Input layer for all layers and lambda split 
 inputsX =  Input(shape = (40, 40, 6), batch_size = None) 
@@ -138,37 +141,37 @@ importance_weights = []
 #Creating split input and dense layer so each layer creates a weight for a single band -> must enumerate this for each band so that weights can be pulled by variable name
 #Band 1
 inputDenseLayer1 = Lambda(lambda x: x[:, :, :, 0:1], input_shape = (40, 40, 6))(inputsX)
-DenseLayer1 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+DenseLayer1 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out1 = DenseLayer1(inputDenseLayer1)
 outputDenseLayers.append(Out1)
 
 #Band 2
 inputDenseLayer2 = Lambda(lambda x: x[:, :, :, 1:2], input_shape = (40, 40, 6))(inputsX)
-DenseLayer2 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+DenseLayer2 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out2 = DenseLayer2(inputDenseLayer2)
 outputDenseLayers.append(Out2)
 
 #Band 3
 inputDenseLayer3 = Lambda(lambda x: x[:, :, :, 2:3], input_shape = (40, 40, 6))(inputsX)
-DenseLayer3 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+DenseLayer3 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out3 = DenseLayer3(inputDenseLayer3)
 outputDenseLayers.append(Out3)
 
 #Band 4
 inputDenseLayer4 = Lambda(lambda x: x[:, :, :, 3:4], input_shape = (40, 40, 6))(inputsX)
-DenseLayer4 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+DenseLayer4 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out4 = DenseLayer4(inputDenseLayer4)
 outputDenseLayers.append(Out4)
 
 #Band 5
 inputDenseLayer5 = Lambda(lambda x: x[:, :, :, 4:5], input_shape = (40, 40, 6))(inputsX)
-DenseLayer5 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+DenseLayer5 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out5 = DenseLayer5(inputDenseLayer5)
 outputDenseLayers.append(Out5)
 
 #Band 6
 inputDenseLayer6 = Lambda(lambda x: x[:, :, :, 5:6], input_shape = (40, 40, 6))(inputsX)
-DenseLayer6 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(0.001))
+DenseLayer6 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out6 = DenseLayer6(inputDenseLayer6)
 outputDenseLayers.append(Out6)
 
@@ -198,12 +201,12 @@ model = tf.keras.Model(inputs = [inputsX], outputs = output)
 #Create summary of our model
 model.summary()
 #Compile the model
-model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(lr = 0.00001), loss='categorical_crossentropy', metrics=['accuracy'])
 
 #######################################################################
 
-#Load weights from training
-trn_weights = "train_LR00001_Reg001.ckpt"
+#Load weights from train_#epochs_LR_L1Coeff.ckpt
+trn_weights = "train_150_00001_1.ckpt"
 model.load_weights(trn_weights)
 
 # Update status of running program
@@ -213,30 +216,6 @@ print("Status: Program is running model. Please wait...")
 print("Chip size: ", val_data_chips.shape)
 valPredict = model.predict(val_data_chips)
 print("predict size: ", valPredict.shape)
-'''
-print("How many predictions to be printed? ")
-userinput = input()
-
-#make sure user prints reasonable amount
-while (int(userinput) > 10):
-    print("Choose a number less than 10.")
-    userinput = input()
-
-print("Val shape: ", val_labels_chips.shape)
-print("valgenshape: ", val_labels_chipsGen.shape)
-
-
-#print predictions
-for i in range(int(userinput)):
-    index = np.random.randint(0, valPredict.shape[0])
-    print(index)
-    plt.clf
-    img = plt.imshow(val_labels_chips[index, :, :], cmap="gray") 
-    plt.colorbar(img, cmap="gray", boundaries=[0, 1, 2,3], ticks=[0, 1, 2, 3])
-    plt.show() 
-    '''
-    
-
 
 # Calculate and display the error metrics, argmax to return class #
 cMatrix = confusion_matrix(val_labels_chips.argmax(axis = 1), valPredict.argmax(axis = 1))
@@ -263,13 +242,21 @@ prTable.rows.append(["Precision", pScore[0], pScore[1], pScore[2]])
 prTable.rows.append(["Recall", rScore[0], rScore[1], rScore[2]])
 print(prTable)
 
+new_label_image = make_image_from_chips(val_labels_chips, chip_width, chip_height)
+new_label_image = np.array(new_label_image, dtype = int)
 
 predict_image = make_image_from_chips(valPredict, chip_width, chip_height)
 predict_image = np.array(predict_image, dtype = int)
-print(predict_image)
-print(predict_image.shape)
 
+#Background to black, trees to blue, grass to green
+cmap = colors.ListedColormap(['k','b','g'])
+plt.imshow(new_label_image, interpolation='nearest', cmap=cmap)
+plt.title("Label Image")
+plt.tight_layout()
+plt.show()
 
-plt.clf()
-plt.imshow(predict_image, cmap = "Greys")
+#Background to black, trees to blue, grass to green
+plt.imshow(predict_image, interpolation='nearest', cmap=cmap)
+plt.title("Image Predictions by Model")
+plt.tight_layout()
 plt.show()
