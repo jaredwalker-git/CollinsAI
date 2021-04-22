@@ -22,7 +22,7 @@ Then, you will need to update accordingly based on latest updates.
 Cuda (Version:11.1)
 cuDNN (Version 8.1.0)
 
-Tensorflow (2.5.0rc0)
+Tensorflow-gpu (2.5.0rc0)
 
 
 PC System Properties:
