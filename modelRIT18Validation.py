@@ -201,21 +201,32 @@ model = tf.keras.Model(inputs = [inputsX], outputs = output)
 #Create summary of our model
 model.summary()
 #Compile the model
-model.compile(optimizer=Adam(lr = 0.00001), loss='categorical_crossentropy', metrics=['accuracy'])
-
+model.compile(optimizer=Adam(lr = 0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+model.add_loss(Band_Importance(band_weights))
 #######################################################################
 
 #Load weights from train_#epochs_LR_L1Coeff.ckpt
-trn_weights = "train_150_00001_1.ckpt"
+trn_weights = "train_150_0001_baseline.ckpt"
 model.load_weights(trn_weights)
 
 # Update status of running program
 print("Status: Program is running model. Please wait...")
 
+
+def Band_Importance(band_weights):
+    def _custom_loss():
+        #abs value was to minimize more aggressively
+        loss = abs(tf.norm(band_weights[0])) + abs(tf.norm(band_weights[1])) + abs(tf.norm(band_weights[2])) + abs(tf.norm(band_weights[3])) + abs(tf.norm(band_weights[4])) + abs(tf.norm(band_weights[5]))
+        return loss
+    return _custom_loss
+
+
+
 # Predict for test data 
 print("Chip size: ", val_data_chips.shape)
 valPredict = model.predict(val_data_chips)
 print("predict size: ", valPredict.shape)
+
 
 # Calculate and display the error metrics, argmax to return class #
 cMatrix = confusion_matrix(val_labels_chips.argmax(axis = 1), valPredict.argmax(axis = 1))

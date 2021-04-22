@@ -106,7 +106,7 @@ train_data = dataset['train_data']
 train_labels = dataset_labels['relabeled_training']
 
 #hyperparameters
-regularizer_coeff = 0
+regularizer_coeff = 1
 
 #Moves bands to channel last
 train_data = np.moveaxis(train_data, 0, -1)
@@ -152,6 +152,7 @@ chip = np.random.randint(0, train_data_chips.shape[0])
 plt.imshow(train_data_chips[chip,:,:,5])
 #plt.show()
 '''
+
 #######################################################################
 #Input layer for all layers and lambda split 
 inputsX =  Input(shape = (40, 40, 6), batch_size = None) 
@@ -219,7 +220,7 @@ output = Dense(3, activation='softmax')(fullyConnected)
 #######################################################################
 
 #Create a callback that saves the model's weights
-save_weights = "train_150_baseline.ckpt"
+save_weights = "train_150_0001_1.ckpt"
 trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True)
 
 #######################################################################
@@ -228,17 +229,14 @@ model = tf.keras.Model(inputs = [inputsX], outputs = output)
 model.summary()
 model.compile(optimizer=Adam(lr = 0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
 
-'''
+
 def Band_Importance(band_weights):
     def _custom_loss():
         #abs value was to minimize more aggressively
         loss = abs(tf.norm(band_weights[0])) + abs(tf.norm(band_weights[1])) + abs(tf.norm(band_weights[2])) + abs(tf.norm(band_weights[3])) + abs(tf.norm(band_weights[4])) + abs(tf.norm(band_weights[5]))
         return loss
     return _custom_loss
-'''
 
-#model.add_loss(Band_Importance(band_weights))
-model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=150, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 #pulling weights to print
 band_weights = []
@@ -248,6 +246,12 @@ band_weights.append(DenseLayer3.kernel)
 band_weights.append(DenseLayer4.kernel)
 band_weights.append(DenseLayer5.kernel)
 band_weights.append(DenseLayer6.kernel)
+model.add_loss(Band_Importance(band_weights))
+pprint(band_weights)
+
+model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=150, verbose=1, shuffle=True, callbacks=[trn_callback])
+
+#print importance post train
 pprint(band_weights)
 
 print("Weights save as file:", save_weights)
