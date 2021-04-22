@@ -16,12 +16,22 @@ from pprint import pprint
 #Import the Modules
 import tensorflow as tf
 from tensorflow import keras
+
+''' Linux
+from tensorflow.python.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, UpSampling2D, Input, Concatenate, Lambda, Layer
+from tensorflow.python.keras.models import Sequential
+from tensorflow.python.keras.losses import categorical_crossentropy 
+from tensorflow.python.keras.optimizers import Adam, SGD
+#import tensorflow.keras.backend as K
+'''
+
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, UpSampling2D, Input, Concatenate, Lambda, Layer
 from tensorflow.keras.models import Sequential
-
 from tensorflow.keras.losses import categorical_crossentropy 
 from tensorflow.keras.optimizers import Adam, SGD
 import tensorflow.keras.backend as K
+
+
 import matplotlib.pyplot as plt
 
 ###########################################################################
@@ -95,7 +105,7 @@ userinput = input()
 chdir = os.chdir(userinput)
 '''
 
-filepath = "C:\\Users\\Jared\\Documents\\Datasets"
+filepath = "C:\\Users\\Ahboy\\Desktop\\Datasets"
 os.chdir(filepath)
 
 dataset = loadmat('rit18_data.mat')
@@ -146,12 +156,12 @@ print("Label Data Chip Shape: ", train_labels_softmax.shape)
 num_of_chips_x = train_data.shape[1] // chip_width
 num_of_chips_y = train_data.shape[0] // chip_height
 
-'''
+
 #Show chip 1 for proof of concept
 chip = np.random.randint(0, train_data_chips.shape[0])
 plt.imshow(train_data_chips[chip,:,:,5])
-#plt.show()
-'''
+plt.show()
+
 
 #######################################################################
 #Input layer for all layers and lambda split 
@@ -249,7 +259,32 @@ band_weights.append(DenseLayer6.kernel)
 model.add_loss(Band_Importance(band_weights))
 pprint(band_weights)
 
-model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=150, verbose=1, shuffle=True, callbacks=[trn_callback])
+history = model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=1, verbose=1, shuffle=True, callbacks=[trn_callback])
+
+
+########### ADDED to print graphs
+# list all data in history
+print(history.history.keys())
+# summarize history for accuracy
+plt.plot(history.history['accuracy'])
+plt.title('Model accuracy')
+plt.ylabel('Accuracy [%]')
+plt.xlabel('Numbers of Training Epochs')
+plt.legend(['Train', 'Test'], loc='upper left')
+plt.show()
+
+# summarize history for loss
+plt.plot(history.history['loss'])
+plt.title('Model loss')
+plt.ylabel('Accuracy [%]')
+plt.xlabel('Numbers of Training Epochs')
+plt.legend(['Train', 'Test'], loc='upper left')
+plt.show()
+##########################################################
+
+
+
+
 
 #print importance post train
 pprint(band_weights)
