@@ -102,6 +102,14 @@ def make_image_from_chips(chips, chip_width, chip_height):
             image.append(row)
     return(image)
 #####################################################################################  
+def Band_Importance(band_weights):
+    def _custom_loss():
+        #abs value was to minimize more aggressively
+        loss = abs(tf.norm(band_weights[0])) + abs(tf.norm(band_weights[1])) + abs(tf.norm(band_weights[2])) + abs(tf.norm(band_weights[3])) + abs(tf.norm(band_weights[4])) + abs(tf.norm(band_weights[5]))
+        return loss
+    return _custom_loss
+####################################################################################
+
 filepath = "C:\\Users\\Jared\\Documents\\Datasets"
 os.chdir(filepath)
 file_path = 'rit18_data.mat'
@@ -202,25 +210,22 @@ model = tf.keras.Model(inputs = [inputsX], outputs = output)
 model.summary()
 #Compile the model
 model.compile(optimizer=Adam(lr = 0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+band_weights = []
+band_weights.append(DenseLayer1.kernel)
+band_weights.append(DenseLayer2.kernel)
+band_weights.append(DenseLayer3.kernel)
+band_weights.append(DenseLayer4.kernel)
+band_weights.append(DenseLayer5.kernel)
+band_weights.append(DenseLayer6.kernel)
 model.add_loss(Band_Importance(band_weights))
 #######################################################################
 
 #Load weights from train_#epochs_LR_L1Coeff.ckpt
-trn_weights = "train_150_0001_baseline.ckpt"
+trn_weights = "C:\\Users\\Jared\\Documents\\GitHub\\CollinsAI\\Training Weights\\001_0.001\\train_0010.ckpt"
 model.load_weights(trn_weights)
 
 # Update status of running program
 print("Status: Program is running model. Please wait...")
-
-
-def Band_Importance(band_weights):
-    def _custom_loss():
-        #abs value was to minimize more aggressively
-        loss = abs(tf.norm(band_weights[0])) + abs(tf.norm(band_weights[1])) + abs(tf.norm(band_weights[2])) + abs(tf.norm(band_weights[3])) + abs(tf.norm(band_weights[4])) + abs(tf.norm(band_weights[5]))
-        return loss
-    return _custom_loss
-
-
 
 # Predict for test data 
 print("Chip size: ", val_data_chips.shape)

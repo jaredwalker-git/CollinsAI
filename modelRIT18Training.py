@@ -105,7 +105,7 @@ userinput = input()
 chdir = os.chdir(userinput)
 '''
 
-filepath = "C:\\Users\\Ahboy\\Desktop\\Datasets"
+filepath = "C:\\Users\\Jared\\Documents\\Datasets"
 os.chdir(filepath)
 
 dataset = loadmat('rit18_data.mat')
@@ -116,7 +116,7 @@ train_data = dataset['train_data']
 train_labels = dataset_labels['relabeled_training']
 
 #hyperparameters
-regularizer_coeff = 1
+regularizer_coeff = 0.001
 
 #Moves bands to channel last
 train_data = np.moveaxis(train_data, 0, -1)
@@ -128,7 +128,7 @@ train_data = train_data[:,:,:6]
 
 
 plt.imshow(train_data[:,:,5])
-#plt.show()
+plt.show()
 chip_width, chip_height = (40,40)
 
 #Show mask with grid
@@ -140,7 +140,7 @@ grid_y = np.arange(0, train_data.shape[0], chip_width)
 ax.set_xticks(grid_x)
 ax.set_yticks(grid_y)
 ax.grid(which='both')
-#plt.show()
+plt.show()
 
 #Prints number of chips 
 print("Number of chips in X:", train_data.shape[1] // chip_width)
@@ -168,7 +168,7 @@ plt.show()
 inputsX =  Input(shape = (40, 40, 6), batch_size = None) 
 
 outputDenseLayers = []
-importance_weights = []
+
 
 #Creating split input and dense layer so each layer creates a weight for a single band -> must enumerate this for each band so that weights can be pulled by variable name
 #Band 1
@@ -229,15 +229,14 @@ output = Dense(3, activation='softmax')(fullyConnected)
 
 #######################################################################
 
-#Create a callback that saves the model's weights
-save_weights = "train_150_0001_1.ckpt"
-trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True)
-
-#######################################################################
-
+#Create a callback that saves the model's weights, we will create a checkpoint every 50 epochs
+iterations_per_epoch = 776
+save_weights = "C:\\Users\\Jared\\Documents\\GitHub\\CollinsAI\\Training Weights\\001_0.001\\train_{epoch:04d}.ckpt"
+trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True, save_freq = iterations_per_epoch)
 model = tf.keras.Model(inputs = [inputsX], outputs = output)
+model.save_weights(save_weights.format(epoch=0))
 model.summary()
-model.compile(optimizer=Adam(lr = 0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(lr = 0.01), loss='categorical_crossentropy', metrics=['accuracy'])
 
 
 def Band_Importance(band_weights):
@@ -259,13 +258,13 @@ band_weights.append(DenseLayer6.kernel)
 model.add_loss(Band_Importance(band_weights))
 pprint(band_weights)
 
-history = model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=1, verbose=1, shuffle=True, callbacks=[trn_callback])
-
+history = model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=10, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 ########### ADDED to print graphs
 # list all data in history
 print(history.history.keys())
 # summarize history for accuracy
+plt.clf()
 plt.plot(history.history['accuracy'])
 plt.title('Model accuracy')
 plt.ylabel('Accuracy [%]')
@@ -281,10 +280,6 @@ plt.xlabel('Numbers of Training Epochs')
 plt.legend(['Train', 'Test'], loc='upper left')
 plt.show()
 ##########################################################
-
-
-
-
 
 #print importance post train
 pprint(band_weights)
