@@ -116,7 +116,7 @@ train_data = dataset['train_data']
 train_labels = dataset_labels['relabeled_training']
 
 #hyperparameters
-regularizer_coeff = 0.001
+regularizer_coeff = 0
 
 #Moves bands to channel last
 train_data = np.moveaxis(train_data, 0, -1)
@@ -231,12 +231,12 @@ output = Dense(3, activation='softmax')(fullyConnected)
 
 #Create a callback that saves the model's weights, we will create a checkpoint every 50 epochs
 iterations_per_epoch = 776
-save_weights = "C:\\Users\\Jared\\Documents\\GitHub\\CollinsAI\\Training Weights\\001_0.001\\train_{epoch:04d}.ckpt"
-trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True, save_freq = iterations_per_epoch)
+save_weights = "C:\\Users\\Jared\\Documents\\GitHub\\CollinsAI\\Training Weights\\001_Baseline\\train_{epoch:04d}.ckpt"
+trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True, save_freq = 50 * iterations_per_epoch)
 model = tf.keras.Model(inputs = [inputsX], outputs = output)
 model.save_weights(save_weights.format(epoch=0))
 model.summary()
-model.compile(optimizer=Adam(lr = 0.01), loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(lr = 0.001), loss='categorical_crossentropy', metrics=['accuracy'])
 
 
 def Band_Importance(band_weights):
@@ -255,10 +255,10 @@ band_weights.append(DenseLayer3.kernel)
 band_weights.append(DenseLayer4.kernel)
 band_weights.append(DenseLayer5.kernel)
 band_weights.append(DenseLayer6.kernel)
-model.add_loss(Band_Importance(band_weights))
+#model.add_loss(Band_Importance(band_weights))
 pprint(band_weights)
 
-history = model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=10, verbose=1, shuffle=True, callbacks=[trn_callback])
+history = model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=500, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 ########### ADDED to print graphs
 # list all data in history
