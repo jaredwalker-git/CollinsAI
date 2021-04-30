@@ -34,7 +34,6 @@ from tensorflow.keras.losses import categorical_crossentropy
 from tensorflow.keras.optimizers import Adam
 import tensorflow.keras.backend as K
 
-
 #################################################################################
 
 def make_chips_data(image, chip_width, chip_height):
@@ -120,11 +119,15 @@ def make_image_from_chips(chips, chip_width, chip_height):
 
 #Hyperparameters
 regularizer_coeff = 0 #replace with value of choice, recommended -> 0 to 1
-chip_width, chip_height = (40,40)   #replace integers within parenthesis 
+chip_width, chip_height = (40, 40)   #replace integers within parenthesis 
 learningRate = 0.0001 #replace with value of choice - Best value from testing = 0.00001 -> typical values 0.001, 0.0001, 0.00001
   
-filepath = "C:\\Users\\Jared\\Documents\\Datasets"
-os.chdir(filepath)
+#Ask the user to input their file_path for the RIT-18 dataset folder within their PC       
+userinput = input("Enter Directory: ")
+os.chdir(userinput)
+
+print("Filepath is set... Please wait") 
+
 file_path = 'rit18_data.mat'
 dataset = loadmat(file_path)
 
@@ -141,10 +144,10 @@ val_labels = labelset['relabeled_val']
 val_data_chips =   make_chips_data(val_data, chip_width, chip_height)
 val_labels_chips = make_chips_labels(val_labels, chip_width, chip_height)
 numChips = val_labels_chips.shape[0]
+
 #Print results from chipping
 print("Total Number of Chips Taken from Mask: ", numChips)
 print("val image shape: ", val_data.shape )
-
 
 #Input layer for all layers and lambda split 
 inputsX =  Input(shape = (40, 40, 6), batch_size = None) 
@@ -193,9 +196,10 @@ outputDenseLayers.append(Out6)
 classifierInput = Concatenate(axis = 2)(outputDenseLayers)
 
 #################################################################################
+#Convolutional Neural Network layers (based on U-net architecture)
 
 #Encoder (down sampling)
-C1 = Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(40,40,6))(classifierInput)
+C1 = Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(40, 40, 6))(classifierInput)
 P1 = MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last')(C1)
 C2 = Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last')(P1)
 P2 = MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last')(C2)
@@ -211,6 +215,7 @@ fullyConnected = Dense(16, activation='relu')(flattenLayer)
 output = Dense(3, activation='softmax')(fullyConnected)
 
 #################################################################################
+#Start validation process
 
 model = tf.keras.Model(inputs = [inputsX], outputs = output)
 #Create summary of our model
@@ -220,6 +225,7 @@ model.summary()
 model.compile(optimizer=Adam(lr = learningRate), loss='categorical_crossentropy', metrics=['accuracy'])
 
 #################################################################################
+#Return weights
 
 #Load weights from train_#epochs_LR_L1Coeff.ckpt
 trn_weights = "C:\\Users\\Jared\\Documents\\GitHub\\CollinsAI\\Training Weights\\00001_0.1\\train_0500.ckpt"
@@ -232,7 +238,6 @@ print("Status: Program is running model. Please wait...")
 print("Chip size: ", val_data_chips.shape)
 valPredict = model.predict(val_data_chips)
 print("predict size: ", valPredict.shape)
-
 
 #Calculate and display the error metrics, argmax to return class #
 cMatrix = confusion_matrix(val_labels_chips.argmax(axis = 1), valPredict.argmax(axis = 1))
