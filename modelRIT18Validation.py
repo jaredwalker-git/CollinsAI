@@ -36,11 +36,9 @@ import tensorflow.keras.backend as K
 
 #################################################################################
 #hyperparameters
-regularizer_coeff = 0.1 #replace with value of choice, recommended -> 0 to 1
-epoch_num = 500  #replace with integer
+regularizer_coeff = 0.0 #replace with value of choice, recommended -> 0 to 1
 chip_width, chip_height = (40,40)   #replace integers within parenthesis 
 learningRate = 0.0001 #replace with value of choice - Best value from testing = 0.00001 -> typical values 0.001, 0.0001, 0.00001
-batchSize = 32 #replace with value of choice -> 32 used in testing due to hardware limitations
 
 def make_chips_data(image, chip_width, chip_height):
 
@@ -121,13 +119,7 @@ def make_image_from_chips(chips, chip_width, chip_height):
             image.append(row)
     return(image)
 
-#################################################################################
-
-#Hyperparameters
-regularizer_coeff = 0 #replace with value of choice, recommended -> 0 to 1
-chip_width, chip_height = (40, 40)   #replace integers within parenthesis 
-learningRate = 0.0001 #replace with value of choice - Best value from testing = 0.00001 -> typical values 0.001, 0.0001, 0.00001
-  
+#################################################################################  
 #Ask the user to input their file_path for the RIT-18 dataset folder within their PC       
 userinput = input("Enter Directory: ")
 os.chdir(userinput)
@@ -155,44 +147,44 @@ print("Total Number of Chips Taken from Mask: ", numChips)
 print("val image shape: ", val_data.shape )
 
 #Input layer for all layers and lambda split 
-inputsX =  Input(shape = (40, 40, 6), batch_size = None) 
+inputsX =  Input(shape = (chip_width, chip_height, 6), batch_size = None) 
 
 outputDenseLayers = []
 importance_weights = []
 
 #Creating split input and dense layer so each layer creates a weight for a single band -> must enumerate this for each band so that weights can be pulled by variable name
 #Band 1
-inputDenseLayer1 = Lambda(lambda x: x[:, :, :, 0:1], input_shape = (40, 40, 6))(inputsX)
+inputDenseLayer1 = Lambda(lambda x: x[:, :, :, 0:1], input_shape = (chip_width, chip_height, 6))(inputsX)
 DenseLayer1 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out1 = DenseLayer1(inputDenseLayer1)
 outputDenseLayers.append(Out1)
 
 #Band 2
-inputDenseLayer2 = Lambda(lambda x: x[:, :, :, 1:2], input_shape = (40, 40, 6))(inputsX)
+inputDenseLayer2 = Lambda(lambda x: x[:, :, :, 1:2], input_shape = (chip_width, chip_height, 6))(inputsX)
 DenseLayer2 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out2 = DenseLayer2(inputDenseLayer2)
 outputDenseLayers.append(Out2)
 
 #Band 3
-inputDenseLayer3 = Lambda(lambda x: x[:, :, :, 2:3], input_shape = (40, 40, 6))(inputsX)
+inputDenseLayer3 = Lambda(lambda x: x[:, :, :, 2:3], input_shape = (chip_width, chip_height, 6))(inputsX)
 DenseLayer3 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out3 = DenseLayer3(inputDenseLayer3)
 outputDenseLayers.append(Out3)
 
 #Band 4
-inputDenseLayer4 = Lambda(lambda x: x[:, :, :, 3:4], input_shape = (40, 40, 6))(inputsX)
+inputDenseLayer4 = Lambda(lambda x: x[:, :, :, 3:4], input_shape = (chip_width, chip_height, 6))(inputsX)
 DenseLayer4 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out4 = DenseLayer4(inputDenseLayer4)
 outputDenseLayers.append(Out4)
 
 #Band 5
-inputDenseLayer5 = Lambda(lambda x: x[:, :, :, 4:5], input_shape = (40, 40, 6))(inputsX)
+inputDenseLayer5 = Lambda(lambda x: x[:, :, :, 4:5], input_shape = (chip_width, chip_height, 6))(inputsX)
 DenseLayer5 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out5 = DenseLayer5(inputDenseLayer5)
 outputDenseLayers.append(Out5)
 
 #Band 6
-inputDenseLayer6 = Lambda(lambda x: x[:, :, :, 5:6], input_shape = (40, 40, 6))(inputsX)
+inputDenseLayer6 = Lambda(lambda x: x[:, :, :, 5:6], input_shape = (chip_width, chip_height, 6))(inputsX)
 DenseLayer6 = Dense(1, activation = None, kernel_regularizer = tf.keras.regularizers.l1(regularizer_coeff))
 Out6 = DenseLayer6(inputDenseLayer6)
 outputDenseLayers.append(Out6)
@@ -204,7 +196,7 @@ classifierInput = Concatenate(axis = 3)(outputDenseLayers)
 #Convolutional Neural Network layers (based on U-net architecture)
 
 #Encoder (down sampling)
-C1 = Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(40, 40, 6))(classifierInput)
+C1 = Conv2D(16, kernel_size=(3, 3), strides= 1,  padding ='same', activation='relu',  data_format='channels_last', input_shape=(chip_width, chip_height, 6))(classifierInput)
 P1 = MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last')(C1)
 C2 = Conv2D(32, kernel_size=(3, 3), strides= 1, padding ='same', activation='relu', data_format='channels_last')(P1)
 P2 = MaxPooling2D(pool_size=(2, 2), strides = 2, padding = 'valid', data_format = 'channels_last')(C2)
