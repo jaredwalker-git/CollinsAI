@@ -117,6 +117,11 @@ def make_image_from_chips(chips, chip_width, chip_height):
     return(image)
 
 #################################################################################
+
+#Hyperparameters
+regularizer_coeff = 0 #replace with value of choice, recommended -> 0 to 1
+chip_width, chip_height = (40,40)   #replace integers within parenthesis 
+learningRate = 0.0001 #replace with value of choice - Best value from testing = 0.00001 -> typical values 0.001, 0.0001, 0.00001
   
 filepath = "C:\\Users\\Jared\\Documents\\Datasets"
 os.chdir(filepath)
@@ -125,8 +130,6 @@ dataset = loadmat(file_path)
 
 #Using "val_labels.mat" file within this program to perform validataion
 labelset = loadmat('val_labels.mat')
-
-chip_width, chip_height = (40,40) #Hyperparameters
 
 #Load Validation Data and Labels and move channels_last
 val_data = dataset['val_data']
@@ -142,8 +145,6 @@ numChips = val_labels_chips.shape[0]
 print("Total Number of Chips Taken from Mask: ", numChips)
 print("val image shape: ", val_data.shape )
 
-#Hyperparameters
-regularizer_coeff = 0
 
 #Input layer for all layers and lambda split 
 inputsX =  Input(shape = (40, 40, 6), batch_size = None) 
@@ -216,7 +217,7 @@ model = tf.keras.Model(inputs = [inputsX], outputs = output)
 model.summary()
 
 #Compile the model
-model.compile(optimizer=Adam(lr = 0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(lr = learningRate), loss='categorical_crossentropy', metrics=['accuracy'])
 
 #################################################################################
 
