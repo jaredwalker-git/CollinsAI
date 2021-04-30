@@ -35,6 +35,12 @@ from tensorflow.keras.optimizers import Adam
 import tensorflow.keras.backend as K
 
 #################################################################################
+#hyperparameters
+regularizer_coeff = 0.1 #replace with value of choice, recommended -> 0 to 1
+epoch_num = 500  #replace with integer
+chip_width, chip_height = (40,40)   #replace integers within parenthesis 
+learningRate = 0.0001 #replace with value of choice - Best value from testing = 0.00001 -> typical values 0.001, 0.0001, 0.00001
+batchSize = 32 #replace with value of choice -> 32 used in testing due to hardware limitations
 
 def make_chips_data(image, chip_width, chip_height):
 
@@ -125,7 +131,6 @@ learningRate = 0.0001 #replace with value of choice - Best value from testing = 
 #Ask the user to input their file_path for the RIT-18 dataset folder within their PC       
 userinput = input("Enter Directory: ")
 os.chdir(userinput)
-
 print("Filepath is set... Please wait") 
 
 file_path = 'rit18_data.mat'
@@ -193,7 +198,7 @@ Out6 = DenseLayer6(inputDenseLayer6)
 outputDenseLayers.append(Out6)
 
 #Now to concatenate the dense layers
-classifierInput = Concatenate(axis = 2)(outputDenseLayers)
+classifierInput = Concatenate(axis = 3)(outputDenseLayers)
 
 #################################################################################
 #Convolutional Neural Network layers (based on U-net architecture)
@@ -228,7 +233,8 @@ model.compile(optimizer=Adam(lr = learningRate), loss='categorical_crossentropy'
 #Return weights
 
 #Load weights from train_#epochs_LR_L1Coeff.ckpt
-trn_weights = "C:\\Users\\Jared\\Documents\\GitHub\\CollinsAI\\Training Weights\\00001_0.1\\train_0500.ckpt"
+trn_weights = input("Enter Path to File for Loading Weights: ")
+print("Filepath is set... Please wait")
 model.load_weights(trn_weights)
 
 #Update status of running program

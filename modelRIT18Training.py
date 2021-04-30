@@ -11,6 +11,7 @@ from scipy.io import loadmat #pip install scipy
 from scipy import stats
 import numpy as np
 from pprint import pprint
+import math
 
 
 #Import the Modules
@@ -35,6 +36,15 @@ import tensorflow.keras.backend as K
 import matplotlib.pyplot as plt
 
 ###########################################################################
+#hyperparameters
+regularizer_coeff = 0.1 #replace with value of choice, recommended -> 0 to 1
+epoch_num = 5  #replace with integer
+chip_width, chip_height = (40,40)   #replace integers within parenthesis 
+learningRate = 0.0001 #replace with value of choice - Best value from testing = 0.00001 -> typical values 0.001, 0.0001, 0.00001
+batchSize = 32 #replace with value of choice -> 32 used in testing due to hardware limitations
+saveFreq = 1 #replace with integer of choice -> 50 used during testing
+
+
 def make_chips_data(image, chip_width, chip_height):
 
     dataset_of_chips = []
@@ -97,16 +107,10 @@ def make_chips_labels(image, chip_width, chip_height):
     return np.array(train_labels_softmax)
 
 ###########################################     
-        
-'''
 # Directory call for user input
-print("Enter Directory:")
-userinput = input()
-chdir = os.chdir(userinput)
-'''
-
-filepath = "C:\\Users\\Jared\\Documents\\Datasets"
-os.chdir(filepath)
+userinput = input("Enter Directory for Datasets: ")
+os.chdir(userinput)
+print("Filepath is set... Please wait")
 
 dataset = loadmat('rit18_data.mat')
 dataset_labels = loadmat('train_labels.mat')
@@ -115,8 +119,6 @@ dataset_labels = loadmat('train_labels.mat')
 train_data = dataset['train_data']
 train_labels = dataset_labels['relabeled_training']
 
-#hyperparameters
-regularizer_coeff = 0.1
 
 #Moves bands to channel last
 train_data = np.moveaxis(train_data, 0, -1)
@@ -129,7 +131,7 @@ train_data = train_data[:,:,:6]
 
 plt.imshow(train_data[:,:,5])
 plt.show()
-chip_width, chip_height = (40,40)
+
 
 #Show mask with grid
 #Chips in the yellow region must be kept
@@ -161,6 +163,7 @@ num_of_chips_y = train_data.shape[0] // chip_height
 chip = np.random.randint(0, train_data_chips.shape[0])
 plt.imshow(train_data_chips[chip,:,:,5])
 plt.show()
+
 
 
 #######################################################################
@@ -230,13 +233,16 @@ output = Dense(3, activation='softmax')(fullyConnected)
 #######################################################################
 
 #Create a callback that saves the model's weights, we will create a checkpoint every 50 epochs
-iterations_per_epoch = 776
-save_weights = "C:\\Users\\Jared\\Documents\\Datasets\\train_{epoch:04d}.ckpt"
-trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True, save_freq = 50 * iterations_per_epoch)
+iterations_per_epoch = math.ceil(numChips/batchSize)
+print("Iterations per Epoch: ", iterations_per_epoch)
+save_weights = input("Enter Directory for Saving Weights: ") + "\\train_{epoch:04d}.ckpt"
+print("Filepath is set... Please wait")
+
+trn_callback = tf.keras.callbacks.ModelCheckpoint(filepath=save_weights, save_weights_only=True, save_freq = saveFreq * iterations_per_epoch)
 model = tf.keras.Model(inputs = [inputsX], outputs = output)
 model.save_weights(save_weights.format(epoch=0))
 model.summary()
-model.compile(optimizer=Adam(lr = 0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(lr = learningRate), loss='categorical_crossentropy', metrics=['accuracy'])
 
 
 def Band_Importance(band_weights):
@@ -258,7 +264,7 @@ band_weights.append(DenseLayer6.kernel)
 #model.add_loss(Band_Importance(band_weights))
 pprint(band_weights)
 
-history = model.fit(train_data_chips, train_labels_softmax, batch_size=32, epochs=10, verbose=1, shuffle=True, callbacks=[trn_callback])
+history = model.fit(train_data_chips, train_labels_softmax, batch_size= batchSize, epochs= epoch_num, verbose=1, shuffle=True, callbacks=[trn_callback])
 
 ########### ADDED to print graphs
 # list all data in history
